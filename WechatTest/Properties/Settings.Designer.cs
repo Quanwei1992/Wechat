@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Wechat.Properties
+namespace WechatTest.Properties
 {
 
 

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Wechat")]
+[assembly: AssemblyTitle("WechatTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Wechat")]
+[assembly: AssemblyProduct("WechatTest")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("a48c55f5-02ab-49ea-b77a-f6a9cc81b1e4")]
+[assembly: Guid("7241ddb9-6caf-4d68-8e06-ffafbc1acefe")]
 
 // 程序集的版本信息由下列四个值组成: 
 //

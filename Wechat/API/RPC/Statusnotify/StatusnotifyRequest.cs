@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace Wechat.API.RPC
 {
-    public class SyncRequest
+    public class StatusnotifyRequest
     {
         public BaseRequest BaseRequest;
-        public SyncKey SyncKey;
-        public long rr;
+        public long ClientMsgId;
+        public string FromUserName;
+        public string ToUserName;
+        public int Code;
     }
 }

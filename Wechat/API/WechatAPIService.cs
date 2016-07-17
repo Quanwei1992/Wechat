@@ -104,7 +104,7 @@ namespace Wechat.API
         /// <param name="skey"></param>
         /// <param name="deviceID"></param>
         /// <returns></returns>
-        public InitResponse Init(string pass_ticket,string uin,string sid,string skey,string deviceID= "e096782367064097")
+        public InitResponse Init(string pass_ticket,string uin,string sid,string skey,string deviceID)
         {
             string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit?r=151280129&pass_ticket=" + pass_ticket;
             InitRequest initReq = new InitRequest();
@@ -145,7 +145,7 @@ namespace Wechat.API
         /// <param name="skey"></param>
         /// <param name="deviceID"></param>
         /// <returns></returns>
-        public BatchGetContactResponse BatchGetContact(User[] requestContacts,string pass_ticket, string uin, string sid, string skey, string deviceID = "e096782367064097")
+        public BatchGetContactResponse BatchGetContact(string[] requestContacts,string pass_ticket, string uin, string sid, string skey, string deviceID)
         {
             string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?type=ex&r=1468738266264&lang=zh_CN&pass_ticket=" + pass_ticket;
             BatchGetContactRequest req = new BatchGetContactRequest();
@@ -155,14 +155,22 @@ namespace Wechat.API
             req.BaseRequest.Uin = uin;
             req.BaseRequest.Skey = skey;
             req.Count = requestContacts.Length;
-            req.List = requestContacts;
+
+            List<User> requestUsers = new List<User>();
+            for (int i = 0; i < req.Count; i++) {
+                var tmp = new User();
+                tmp.UserName = requestContacts[i];
+                requestUsers.Add(tmp);
+            }
+
+            req.List = requestUsers.ToArray();
             string requestJson = JsonConvert.SerializeObject(req);
             string repJsonStr = http.POST_UTF8String(url, requestJson);
             var rep = JsonConvert.DeserializeObject<BatchGetContactResponse>(repJsonStr);
             return rep;
         }
 
-        public SyncCheckResponse SyncCheck(SyncItem[] syncItems,string uin, string sid, string skey, string deviceID = "e096782367064097")
+        public SyncCheckResponse SyncCheck(SyncItem[] syncItems,string uin, string sid, string skey, string deviceID)
         {
             string synckey = "";
             for (int i = 0; i < syncItems.Length; i++) {
@@ -171,8 +179,8 @@ namespace Wechat.API
                 }
                 synckey += syncItems[i].Key + "_" + syncItems[i].Val;
             }
-            string url = "https://webpush.wx.qq.com/cgi-bin/mmwebwx-bin/synccheck?r=1468742341659&skey={0}&sid={1}&uin={2}&deviceid={3}&synckey={4}&t={5}";
-            url = string.Format(url,skey,sid,uin,deviceID,synckey,DateTime.Now.Ticks);
+            string url = "https://webpush.wx.qq.com/cgi-bin/mmwebwx-bin/synccheck?skey={0}&sid={1}&uin={2}&deviceid={3}&synckey={4}&_={5}&r={6}";
+            url = string.Format(url,skey.Replace("@","%40"),sid,uin,deviceID,synckey, getTimestamp(DateTime.Now)-10, getTimestamp(DateTime.Now));
             string repStr = http.GET_UTF8String(url);
             SyncCheckResponse rep = new SyncCheckResponse();
             if (repStr.StartsWith("window.synccheck="))
@@ -181,6 +189,47 @@ namespace Wechat.API
                 rep = JsonConvert.DeserializeObject<SyncCheckResponse>(repStr);
             }
             
+            return rep;
+        }
+
+        static long getTimestamp(DateTime time) {
+            return (long)(time.ToUniversalTime() - new System.DateTime(1970, 1, 1)).TotalMilliseconds;
+        }
+
+        public SyncResponse Sync(SyncKey syncKey,string uin,string sid,string skey,string pass_ticket,string deviceID )
+        {
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsync?sid={0}&skey={1}&lang=zh_CN&pass_ticket={2}";
+            url = string.Format(url,sid,skey,pass_ticket);
+            SyncRequest req = new SyncRequest();
+            req.BaseRequest = new BaseRequest();
+            req.BaseRequest.DeviceID = deviceID;
+            req.BaseRequest.Sid = sid;
+            req.BaseRequest.Uin = uin;
+            req.BaseRequest.Skey = skey;
+            req.SyncKey = syncKey;
+            req.rr = getTimestamp(DateTime.Now);
+            string requestJson = JsonConvert.SerializeObject(req);
+            string repJsonStr = http.POST_UTF8String(url, requestJson);
+            var rep = JsonConvert.DeserializeObject<SyncResponse>(repJsonStr);
+            return rep;
+        }
+
+        public StatusnotifyResponse Statusnotify(string formUser,string toUser,string pass_ticket, string uin, string sid, string skey, string deviceID)
+        {
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?lang=zh_CN&pass_ticket=" + pass_ticket;
+            StatusnotifyRequest req = new StatusnotifyRequest();
+            req.BaseRequest = new BaseRequest();
+            req.BaseRequest.DeviceID = deviceID;
+            req.BaseRequest.Sid = sid;
+            req.BaseRequest.Uin = uin;
+            req.BaseRequest.Skey = skey;
+            req.ClientMsgId = getTimestamp(DateTime.Now);
+            req.FromUserName = formUser;
+            req.ToUserName = toUser;
+            req.Code = 3;
+            string requestJson = JsonConvert.SerializeObject(req);
+            string repJsonStr = http.POST_UTF8String(url, requestJson);
+            var rep = JsonConvert.DeserializeObject<StatusnotifyResponse>(repJsonStr);
             return rep;
         }
     }

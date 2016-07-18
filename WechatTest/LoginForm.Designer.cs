@@ -29,12 +29,15 @@
         {
             this.pictureBox_qr = new System.Windows.Forms.PictureBox();
             this.comboBox_users = new System.Windows.Forms.ComboBox();
+            this.button_send_msg_txt = new System.Windows.Forms.Button();
+            this.textBox_msg_text = new System.Windows.Forms.TextBox();
+            this.button_send_msg_image = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_qr)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox_qr
             // 
-            this.pictureBox_qr.Location = new System.Drawing.Point(30, 35);
+            this.pictureBox_qr.Location = new System.Drawing.Point(226, 82);
             this.pictureBox_qr.Name = "pictureBox_qr";
             this.pictureBox_qr.Size = new System.Drawing.Size(228, 202);
             this.pictureBox_qr.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -44,16 +47,46 @@
             // comboBox_users
             // 
             this.comboBox_users.FormattingEnabled = true;
-            this.comboBox_users.Location = new System.Drawing.Point(30, 255);
+            this.comboBox_users.Location = new System.Drawing.Point(12, 312);
             this.comboBox_users.Name = "comboBox_users";
-            this.comboBox_users.Size = new System.Drawing.Size(228, 20);
+            this.comboBox_users.Size = new System.Drawing.Size(728, 20);
             this.comboBox_users.TabIndex = 1;
+            // 
+            // button_send_msg_txt
+            // 
+            this.button_send_msg_txt.Location = new System.Drawing.Point(153, 352);
+            this.button_send_msg_txt.Name = "button_send_msg_txt";
+            this.button_send_msg_txt.Size = new System.Drawing.Size(99, 23);
+            this.button_send_msg_txt.TabIndex = 2;
+            this.button_send_msg_txt.Text = "发送文字消息";
+            this.button_send_msg_txt.UseVisualStyleBackColor = true;
+            this.button_send_msg_txt.Click += new System.EventHandler(this.button_send_msg_txt_Click);
+            // 
+            // textBox_msg_text
+            // 
+            this.textBox_msg_text.Location = new System.Drawing.Point(24, 353);
+            this.textBox_msg_text.Name = "textBox_msg_text";
+            this.textBox_msg_text.Size = new System.Drawing.Size(123, 21);
+            this.textBox_msg_text.TabIndex = 3;
+            // 
+            // button_send_msg_image
+            // 
+            this.button_send_msg_image.Location = new System.Drawing.Point(258, 352);
+            this.button_send_msg_image.Name = "button_send_msg_image";
+            this.button_send_msg_image.Size = new System.Drawing.Size(119, 23);
+            this.button_send_msg_image.TabIndex = 4;
+            this.button_send_msg_image.Text = "发送图片消息";
+            this.button_send_msg_image.UseVisualStyleBackColor = true;
+            this.button_send_msg_image.Click += new System.EventHandler(this.button_send_msg_image_Click);
             // 
             // LoginForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(287, 366);
+            this.ClientSize = new System.Drawing.Size(752, 603);
+            this.Controls.Add(this.button_send_msg_image);
+            this.Controls.Add(this.textBox_msg_text);
+            this.Controls.Add(this.button_send_msg_txt);
             this.Controls.Add(this.comboBox_users);
             this.Controls.Add(this.pictureBox_qr);
             this.Name = "LoginForm";
@@ -61,6 +94,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_qr)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -68,6 +102,9 @@
 
         private System.Windows.Forms.PictureBox pictureBox_qr;
         private System.Windows.Forms.ComboBox comboBox_users;
+        private System.Windows.Forms.Button button_send_msg_txt;
+        private System.Windows.Forms.TextBox textBox_msg_text;
+        private System.Windows.Forms.Button button_send_msg_image;
     }
 }
 

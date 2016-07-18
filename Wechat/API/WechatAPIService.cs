@@ -9,6 +9,9 @@ using System.Drawing;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Specialized;
+using System.Security.Cryptography;
+using Wechat.tools;
 namespace Wechat.API
 {
     public class WechatAPIService
@@ -251,6 +254,48 @@ namespace Wechat.API
             string requestJson = JsonConvert.SerializeObject(req);
             string repJsonStr = http.POST_UTF8String(url, requestJson);
             var rep = JsonConvert.DeserializeObject<SendMsgResponse>(repJsonStr);
+            return rep;
+        }
+
+
+        public UploadmediaResponse Uploadmedia(string fromUserName,string toUserName,string id,string mime_type, int uploadType,int mediaType,byte[] buffer,string fileName,string pass_ticket,string uin, string sid, string skey, string deviceID) {
+            UploadmediaRequest req = new UploadmediaRequest();
+            req.BaseRequest = new BaseRequest();
+            req.BaseRequest.DeviceID = deviceID;
+            req.BaseRequest.Sid = sid;
+            req.BaseRequest.Uin = uin;
+            req.BaseRequest.Skey = skey;
+            req.ClientMediaId = getTimestamp(DateTime.Now);
+            req.DataLen = buffer.Length;
+            req.TotalLen = buffer.Length;
+            req.MediaType = mediaType;
+            req.FromUserName = fromUserName;
+            req.ToUserName = toUserName;
+            req.UploadType = uploadType;
+            req.FileMd5 = UniversalTool.getMD5(buffer);
+
+            string url = "https://file.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json";
+            string requestJson = JsonConvert.SerializeObject(req);
+            NameValueCollection data = new NameValueCollection();
+            data.Add("id",id);
+            data.Add("name",fileName);
+            data.Add("type", mime_type);
+            data.Add("lastModifiedDate", "Thu Mar 17 2016 14:35:28 GMT+0800 (中国标准时间)");
+            data.Add("size",buffer.Length.ToString());
+            data.Add("chunks","1");
+            data.Add("chunk", "0");
+            string mt = "doc";
+            if (mime_type.StartsWith("image/")) {
+                mt = "pic";
+            }
+            data.Add("mediatype",mt);
+            data.Add("uploadmediarequest",requestJson);
+            var dataTicketCookie = http.GetCookie("webwx_data_ticket");
+            data.Add("webwx_data_ticket", dataTicketCookie.Value);
+            data.Add("pass_ticket", pass_ticket);
+            data.Add("uploadmediarequest", requestJson);
+            string repJsonStr = http.UploadFile_UTF8String(url, buffer, fileName, data, Encoding.UTF8);
+            var rep = JsonConvert.DeserializeObject<UploadmediaResponse>(repJsonStr);
             return rep;
         }
     }

@@ -148,7 +148,7 @@ namespace Wechat.API.Http
         }
 
 
-        public string UploadFile(string url, byte[] fileBuf,string fileName,NameValueCollection data, Encoding encoding)
+        public byte[] UploadFile(string url, byte[] fileBuf,string fileName,NameValueCollection data, Encoding encoding)
         {
             string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
             byte[] boundarybytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
@@ -187,9 +187,27 @@ namespace Wechat.API.Http
             }
             //2.WebResponse
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            using (StreamReader stream = new StreamReader(response.GetResponseStream())) {
-                return stream.ReadToEnd();
+            Stream response_stream = response.GetResponseStream();
+
+            int count = (int)response.ContentLength;
+            int offset = 0;
+            byte[] buf = new byte[count];
+            while (count > 0)  //读取返回数据
+            {
+                int n = response_stream.Read(buf, offset, count);
+                if (n == 0) break;
+                count -= n;
+                offset += n;
             }
+            return buf;
+        }
+
+
+        public string UploadFile_UTF8String(string url, byte[] fileBuf, string fileName, NameValueCollection data, Encoding encoding)
+        {
+            var bytes = UploadFile(url,fileBuf,fileName,data,encoding);
+            string utf8str = Encoding.UTF8.GetString(bytes);
+            return utf8str;
         }
 
     }

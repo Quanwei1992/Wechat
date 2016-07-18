@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Wechat.API;
 using System.Drawing;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 namespace Wechat
 {
     public class WechatClient
@@ -53,14 +54,12 @@ namespace Wechat
         {
             if (mCachedUsers.ContainsKey(user.UserName)) {
                 mCachedUsers[user.UserName] = user;
+                OnUpdateUser?.Invoke(user);
             } else {
                 mCachedUsers[user.UserName] = user;
                 OnAddUser?.Invoke(user);
-                //Debug.WriteLine(user.NickName +":" +user.UserName);
-                if (string.IsNullOrWhiteSpace(user.Alias)) {
-                    Debug.WriteLine("###:" + user.NickName + "   UserName:" + user.UserName);
-                }
-                OnUpdateUser?.Invoke(user);
+                Debug.WriteLine(user.NickName +":" +user.UserName);
+                
             }
         }
 
@@ -129,18 +128,9 @@ namespace Wechat
 
             List<string> waitingToCacheUserList = new List<string>();
             foreach (var user in getContactResult.MemberList) {
-                if (user.UserName.StartsWith("@") && !user.UserName.StartsWith("@@")) {
-                    if (string.IsNullOrWhiteSpace(user.Alias)) {
-                        waitingToCacheUserList.Add(user.UserName);
-                        continue;
-                    }
-                }
                 CacheUser(user);
             }
-
-            
-
-            
+             
             mRecentContacts.Clear();
             if (initResult.ContactList != null) {
                 foreach (var user in initResult.ContactList){
@@ -215,6 +205,24 @@ namespace Wechat
             } else {
                 return false;
             }
+        }
+
+        int upLoadMediaCount = 0;
+        public bool SendMsg(string toUserName, Image img,string imgName) {
+            MemoryStream ms = new MemoryStream();
+            img.Save(ms,ImageFormat.Png);
+            ms.Seek(0, SeekOrigin.Begin);
+            byte[] buffer = new byte[ms.Length];
+            ms.Read(buffer, 0, buffer.Length);
+            ms.Close();
+            
+            var response = api.Uploadmedia(CurrentUser.UserName,toUserName, "WU_FILE_"+upLoadMediaCount,"image/png",2,4,buffer,imgName+".png",mPass_ticket,mWxuin,mWxsid,mSkey,mDeviceID);
+            if (response != null && response.BaseResponse != null && response.BaseResponse.ret == 0) {
+                upLoadMediaCount++;
+                return true;
+            } else {
+                return false;
+            }         
         }
 
     }

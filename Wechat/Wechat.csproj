@@ -56,6 +56,8 @@
     <Compile Include="API\RPC\SyncCheck\SyncCheckResponse.cs" />
     <Compile Include="API\RPC\Sync\SyncRequest.cs" />
     <Compile Include="API\RPC\Sync\SyncResponse.cs" />
+    <Compile Include="API\RPC\Uploadmedia\UploadmediaRequest.cs" />
+    <Compile Include="API\RPC\Uploadmedia\UploadmediaResponse.cs" />
     <Compile Include="API\Wx\AppInfo.cs" />
     <Compile Include="API\Wx\AddMsg.cs" />
     <Compile Include="API\Wx\Msg.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="API\RPC\BaseRequest.cs" />
     <Compile Include="API\Result\LoginResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="tools\UniversalTool.cs" />
     <Compile Include="WechatClient.cs" />
   </ItemGroup>
   <ItemGroup>

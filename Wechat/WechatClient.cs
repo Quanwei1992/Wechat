@@ -53,11 +53,14 @@ namespace Wechat
         {
             if (mCachedUsers.ContainsKey(user.UserName)) {
                 mCachedUsers[user.UserName] = user;
-                OnUpdateUser?.Invoke(user);
             } else {
                 mCachedUsers[user.UserName] = user;
                 OnAddUser?.Invoke(user);
-                Debug.WriteLine(user.NickName +":" +user.UserName);
+                //Debug.WriteLine(user.NickName +":" +user.UserName);
+                if (!string.IsNullOrWhiteSpace(user.Alias)) {
+                    Debug.WriteLine("###:" + user.NickName + "   微信号:" + user.Alias);
+                }
+                OnUpdateUser?.Invoke(user);
             }
         }
 

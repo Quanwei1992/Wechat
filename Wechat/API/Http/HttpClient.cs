@@ -4,6 +4,7 @@ using System.Net;
 using System.IO;
 using System.Collections;
 using System;
+using System.Collections.Specialized;
 
 namespace Wechat.API.Http
 {
@@ -144,6 +145,51 @@ namespace Wechat.API.Http
                     foreach (Cookie c in colCookies) lstCookies.Add(c);
             }
             return lstCookies;
+        }
+
+
+        public string UploadFile(string url, byte[] fileBuf,string fileName,NameValueCollection data, Encoding encoding)
+        {
+            string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
+            byte[] boundarybytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
+            byte[] endbytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
+
+            //1.HttpWebRequest
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.ContentType = "multipart/form-data; boundary=" + boundary;
+            request.Method = "POST";
+            request.KeepAlive = true;
+            request.Credentials = CredentialCache.DefaultCredentials;
+
+            using (Stream stream = request.GetRequestStream()) {
+                //1.1 key/value
+                string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
+                if (data != null) {
+                    foreach (string key in data.Keys) {
+                        stream.Write(boundarybytes, 0, boundarybytes.Length);
+                        string formitem = string.Format(formdataTemplate, key, data[key]);
+                        byte[] formitembytes = encoding.GetBytes(formitem);
+                        stream.Write(formitembytes, 0, formitembytes.Length);
+                    }
+                }
+
+                //1.2 file
+                string headerTemplate = "Content-Disposition: form-data; name=\"filename\"; filename=\"{0}\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+
+                stream.Write(boundarybytes, 0, boundarybytes.Length);
+                string header = string.Format(headerTemplate,fileName);
+                byte[] headerbytes = encoding.GetBytes(header);
+                stream.Write(headerbytes, 0, headerbytes.Length);
+                stream.Write(fileBuf, 0, fileBuf.Length);
+
+                //1.3 form end
+                stream.Write(endbytes, 0, endbytes.Length);
+            }
+            //2.WebResponse
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            using (StreamReader stream = new StreamReader(response.GetResponseStream())) {
+                return stream.ReadToEnd();
+            }
         }
 
     }

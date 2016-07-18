@@ -57,8 +57,8 @@ namespace Wechat
                 mCachedUsers[user.UserName] = user;
                 OnAddUser?.Invoke(user);
                 //Debug.WriteLine(user.NickName +":" +user.UserName);
-                if (!string.IsNullOrWhiteSpace(user.Alias)) {
-                    Debug.WriteLine("###:" + user.NickName + "   微信号:" + user.Alias);
+                if (string.IsNullOrWhiteSpace(user.Alias)) {
+                    Debug.WriteLine("###:" + user.NickName + "   UserName:" + user.UserName);
                 }
                 OnUpdateUser?.Invoke(user);
             }
@@ -126,11 +126,19 @@ namespace Wechat
                 return;
             }
 
+
+            List<string> waitingToCacheUserList = new List<string>();
             foreach (var user in getContactResult.MemberList) {
+                if (user.UserName.StartsWith("@") && !user.UserName.StartsWith("@@")) {
+                    if (string.IsNullOrWhiteSpace(user.Alias)) {
+                        waitingToCacheUserList.Add(user.UserName);
+                        continue;
+                    }
+                }
                 CacheUser(user);
             }
 
-            List<string> waitingToCacheUserList = new List<string>();
+            
 
             
             mRecentContacts.Clear();

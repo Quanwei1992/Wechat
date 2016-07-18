@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Wechat.API.RPC
 {
-
-    public class BatchGetContactRequest
+    public class SendMsgResponse
     {
-        public BaseRequest BaseRequest;
-        public int Count;
-        public BatchUser[] List;
+        public BaseResponse BaseResponse;
     }
 }

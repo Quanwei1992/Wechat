@@ -37,7 +37,7 @@ namespace Wechat
         private List<string> mRecentContacts = new List<string>();
 
         // 当前用户
-        private User mCurrentUser;
+        public User CurrentUser { get;private set; }
 
 
 
@@ -45,6 +45,21 @@ namespace Wechat
         public Action<Image> OnGetQRCodeImage;
         public Action<Image> OnUserScanQRCode;
         public Action OnLoginSucess;
+        public Action<User> OnAddUser;
+        public Action<User> OnUpdateUser;
+        public Action<AddMsg> OnRecvMsg;
+
+        private void CacheUser(User user)
+        {
+            if (mCachedUsers.ContainsKey(user.UserName)) {
+                mCachedUsers[user.UserName] = user;
+                OnUpdateUser?.Invoke(user);
+            } else {
+                mCachedUsers[user.UserName] = user;
+                OnAddUser?.Invoke(user);
+                Debug.WriteLine(user.NickName +":" +user.UserName);
+            }
+        }
 
 
         /// <summary>
@@ -94,11 +109,11 @@ namespace Wechat
                 return;
             }
 
-            mCurrentUser = initResult.User;
+            CurrentUser = initResult.User;
 
             // 开启状态通知
 
-            var statusNotifyRep = api.Statusnotify(mCurrentUser.UserName,mCurrentUser.UserName,mPass_ticket,mWxuin,mWxsid,mSkey,mDeviceID);
+            var statusNotifyRep = api.Statusnotify(CurrentUser.UserName, CurrentUser.UserName,mPass_ticket,mWxuin,mWxsid,mSkey,mDeviceID);
 
 
             // 获得联系人列表
@@ -109,7 +124,7 @@ namespace Wechat
             }
 
             foreach (var user in getContactResult.MemberList) {
-                mCachedUsers[user.UserName] = user;
+                CacheUser(user);
             }
 
             List<string> waitingToCacheUserList = new List<string>();
@@ -118,8 +133,7 @@ namespace Wechat
             mRecentContacts.Clear();
             if (initResult.ContactList != null) {
                 foreach (var user in initResult.ContactList){
-                    mCachedUsers[user.UserName] = user;
-                    Debug.WriteLine("Added User:" + user.NickName + " id:" + user.UserName);
+                    CacheUser(user);
                 }
             }
 
@@ -147,7 +161,10 @@ namespace Wechat
                         // addmsg
                         if (syncResult.AddMsgCount > 0) {
                             foreach (var msg in syncResult.AddMsgList) {
-                                Debug.WriteLine("Msg:" + msg.Content+"," + msg.StatusNotifyUserName);
+                                // 过滤系统信息
+                                if (msg.MsgType != 51) {                            
+                                    OnRecvMsg?.Invoke(msg);
+                                }
                                 var notifyUserNames = msg.StatusNotifyUserName.Split(',');
                                 foreach (var username in notifyUserNames) {
                                     if (!username.StartsWith("@")) continue;
@@ -164,18 +181,30 @@ namespace Wechat
                 var batchResult = api.BatchGetContact(waitingToCacheUserList.ToArray(), mPass_ticket, mWxuin, mWxsid, mSkey,mDeviceID);
                 if (batchResult.ContactList != null) {
                     foreach (var user in batchResult.ContactList) {
-                        mCachedUsers[user.UserName] = user;
-                        Debug.WriteLine("Added User:" + user.NickName + " id:" + user.UserName);
+                        CacheUser(user);
                     }
                 }
                 waitingToCacheUserList.Clear();
             }
-
-
         }
 
 
-
+        public bool SendMsg(string toUserName,string content)
+        {
+            Msg msg = new Msg();
+            msg.FromUserName = CurrentUser.UserName;
+            msg.ToUserName = toUserName;
+            msg.Content = content;
+            msg.ClientMsgId = DateTime.Now.Millisecond;
+            msg.LocalID = DateTime.Now.Millisecond;
+            msg.Type = 1;//type 1 文本消息
+            var response = api.SendMsg(msg,mPass_ticket,mWxuin, mWxsid, mSkey, mDeviceID);
+            if (response != null && response.BaseResponse != null && response.BaseResponse.ret == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 
     }
 }

@@ -10,7 +10,7 @@ namespace Wechat.API.RPC
     {
         public BaseResponse BaseResponse;
         public int AddMsgCount;
-        public Msg[] AddMsgList;
+        public AddMsg[] AddMsgList;
         public int ContinueFlag;
         public int DelContactCount;
         //public Contanct[] DelContactList;

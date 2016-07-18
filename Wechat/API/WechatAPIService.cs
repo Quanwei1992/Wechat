@@ -106,7 +106,8 @@ namespace Wechat.API
         /// <returns></returns>
         public InitResponse Init(string pass_ticket,string uin,string sid,string skey,string deviceID)
         {
-            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit?r=151280129&pass_ticket=" + pass_ticket;
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit?r={0}&pass_ticket={1}";
+            url = string.Format(url,getTimestamp(DateTime.Now),pass_ticket);
             InitRequest initReq = new InitRequest();
             initReq.BaseRequest = new BaseRequest();
             initReq.BaseRequest.DeviceID = deviceID;
@@ -128,8 +129,8 @@ namespace Wechat.API
 
         public GetContactResponse GetContact(string pass_ticket,string skey)
         {
-            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact?pass_ticket={0}&r=1468727560705&seq=0&skey={1}";
-            url = string.Format(url, pass_ticket, skey);
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact?pass_ticket={0}&r={1}&seq=0&skey={2}";
+            url = string.Format(url, pass_ticket,getTimestamp(DateTime.Now),skey);
             string json = http.GET_UTF8String(url);
             var rep = JsonConvert.DeserializeObject<GetContactResponse>(json);
             return rep;
@@ -147,7 +148,9 @@ namespace Wechat.API
         /// <returns></returns>
         public BatchGetContactResponse BatchGetContact(string[] requestContacts,string pass_ticket, string uin, string sid, string skey, string deviceID)
         {
-            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?type=ex&r=1468738266264&lang=zh_CN&pass_ticket=" + pass_ticket;
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?type=ex&r={0}&lang=zh_CN&pass_ticket={1}";
+            url = string.Format(url, getTimestamp(DateTime.Now), pass_ticket);
+
             BatchGetContactRequest req = new BatchGetContactRequest();
             req.BaseRequest = new BaseRequest();
             req.BaseRequest.DeviceID = deviceID;
@@ -156,9 +159,9 @@ namespace Wechat.API
             req.BaseRequest.Skey = skey;
             req.Count = requestContacts.Length;
 
-            List<User> requestUsers = new List<User>();
+            List<BatchUser> requestUsers = new List<BatchUser>();
             for (int i = 0; i < req.Count; i++) {
-                var tmp = new User();
+                var tmp = new BatchUser();
                 tmp.UserName = requestContacts[i];
                 requestUsers.Add(tmp);
             }
@@ -230,6 +233,24 @@ namespace Wechat.API
             string requestJson = JsonConvert.SerializeObject(req);
             string repJsonStr = http.POST_UTF8String(url, requestJson);
             var rep = JsonConvert.DeserializeObject<StatusnotifyResponse>(repJsonStr);
+            return rep;
+        }
+
+        public SendMsgResponse SendMsg(Msg msg, string pass_ticket, string uin, string sid, string skey, string deviceID)
+        {
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsg?sid={0}&r={1}&lang=zh_CN&pass_ticket={2}";
+            url = string.Format(url,sid,getTimestamp(DateTime.Now),pass_ticket);
+            SendMsgRequest req = new SendMsgRequest();
+            req.BaseRequest = new BaseRequest();
+            req.BaseRequest.DeviceID = deviceID;
+            req.BaseRequest.Sid = sid;
+            req.BaseRequest.Uin = uin;
+            req.BaseRequest.Skey = skey;
+            req.Msg = msg;
+            req.rr = DateTime.Now.Millisecond;
+            string requestJson = JsonConvert.SerializeObject(req);
+            string repJsonStr = http.POST_UTF8String(url, requestJson);
+            var rep = JsonConvert.DeserializeObject<SendMsgResponse>(repJsonStr);
             return rep;
         }
     }

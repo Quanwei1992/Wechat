@@ -3,6 +3,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Collections;
+using System;
 
 namespace Wechat.API.Http
 {
@@ -43,8 +44,9 @@ namespace Wechat.API.Http
                     offset += n;
                 }
                 return buf;
-            } catch {
-                return null;
+            } catch(Exception e) {
+                System.Diagnostics.Debug.WriteLine(e);
+                return new byte[] {0};
             }
         }
 
@@ -94,8 +96,9 @@ namespace Wechat.API.Http
                     offset += n;
                 }
                 return buf;
-            } catch {
-                return null;
+            } catch (Exception e) {
+                System.Diagnostics.Debug.WriteLine(e);
+                return new byte[] { 0 };
             }
         }
 

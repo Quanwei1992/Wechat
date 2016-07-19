@@ -46,6 +46,7 @@ namespace Wechat
         public Action<Image> OnGetQRCodeImage;
         public Action<Image> OnUserScanQRCode;
         public Action OnLoginSucess;
+        public Action OnInitComplate;
         public Action<User> OnAddUser;
         public Action<User> OnUpdateUser;
         public Action<AddMsg> OnRecvMsg;
@@ -63,6 +64,8 @@ namespace Wechat
             }
         }
 
+        //首次初始化已完成(收到MsgType=51的消息,且获取完Contact)
+        private bool firstInited = false;
 
         /// <summary>
         /// 运行微信Client主逻辑,推荐放在独立的线程中执行这个方法
@@ -151,9 +154,10 @@ namespace Wechat
             SyncKey syncKey = initResult.SyncKey;
             // main loop
             while (true){
-                if (syncKey.Count > 0) {
-                    var syncCheckResult = api.SyncCheck(syncKey.List, mWxuin, mWxsid, mSkey, mDeviceID);
-                    
+                bool hasInitMsg = false;
+                // 同步
+                if (syncKey.Count > 0) {                  
+                    var syncCheckResult = api.SyncCheck(syncKey.List, mWxuin, mWxsid, mSkey, mDeviceID);                   
                     if (syncCheckResult.retcode == "0" && syncCheckResult.selector != "0") {
                         Debug.WriteLine("syncheck:" + syncCheckResult.retcode+","  + syncCheckResult.selector);
                         var syncResult = api.Sync(syncKey,mWxuin,mWxsid,mSkey,mPass_ticket, mDeviceID);
@@ -163,8 +167,10 @@ namespace Wechat
                         if (syncResult.AddMsgCount > 0) {
                             foreach (var msg in syncResult.AddMsgList) {
                                 // 过滤系统信息
-                                if (msg.MsgType != 51) {                            
+                                if (msg.MsgType != 51) {
                                     OnRecvMsg?.Invoke(msg);
+                                } else {
+                                    hasInitMsg = true;
                                 }
                                 var notifyUserNames = msg.StatusNotifyUserName.Split(',');
                                 foreach (var username in notifyUserNames) {
@@ -175,10 +181,17 @@ namespace Wechat
                                 }
                             }
                         }
+
+                        // modify contact
+                        if (syncResult.ModContactList != null) {
+                            foreach (var modContact in syncResult.ModContactList) {
+                                CacheUser(modContact);
+                            }
+                        }
                     }
                 }
 
-                // get user
+                // 获得群详细信息
                 var batchResult = api.BatchGetContact(waitingToCacheUserList.ToArray(), mPass_ticket, mWxuin, mWxsid, mSkey,mDeviceID);
                 if (batchResult.ContactList != null) {
                     foreach (var user in batchResult.ContactList) {
@@ -186,9 +199,22 @@ namespace Wechat
                     }
                 }
                 waitingToCacheUserList.Clear();
+                // 初始化完成回调
+                if (hasInitMsg && !firstInited) {
+                    firstInited = true;
+                    OnInitComplate?.Invoke();
+                }
             }
         }
 
+        /// <summary>
+        /// 刷新群聊成员信息(Sync的时候可以返回群聊成员的Uin)
+        /// </summary>
+        /// <param name="groupUserName"></param>
+        public void RefreshGroupMemberInfo(string groupUserName)
+        {
+            api.Oplog(groupUserName, 3, 0, mPass_ticket, mWxuin, mWxsid, mSkey, mDeviceID);
+        }
 
         public bool SendMsg(string toUserName,string content)
         {

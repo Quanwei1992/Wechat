@@ -98,12 +98,19 @@ namespace WechatTest
             wc.OnUserScanQRCode = (image) => {
                 RunInMainthread(() => {
                     pictureBox_qr.Image = image;
+                    label_status.Text = "扫描成功\n请在手机上确认登陆";
                 });
             };
 
             wc.OnLoginSucess = () => {
                 RunInMainthread(()=> {
-                   // MessageBox.Show("login sucess");
+                    label_status.Text = "已确认,正在登陆....";
+                });
+            };
+
+            wc.OnInitComplate = () => {
+                RunInMainthread(() => {
+                    label_status.Text = wc.CurrentUser.NickName+"("+wc.CurrentUser.Alias+")";
                 });
             };
 
@@ -181,6 +188,18 @@ namespace WechatTest
                     }
                 }
                 
+            }
+        }
+
+        private void button_refreshGroupMemberInfo_Click(object sender, EventArgs e)
+        {
+            string str = comboBox_users.Text;
+            var args = str.Split('|');
+            if (args.Length == 2) {
+                string userName = args[1];
+                if (userName.StartsWith("@@")) {
+                    wc.RefreshGroupMemberInfo(userName);
+                }
             }
         }
     }

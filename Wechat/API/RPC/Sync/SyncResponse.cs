@@ -13,11 +13,11 @@ namespace Wechat.API.RPC
         public AddMsg[] AddMsgList;
         public int ContinueFlag;
         public int DelContactCount;
-        //public Contanct[] DelContactList;
+        public User[] DelContactList;
         public int ModChatRoomMemberCount;
         //public ChatRoomMember[] ModChatRoomMemberList;
         public int ModContactCount;
-        //public Contact[] ModContactList;
+        public User[] ModContactList;
         public string Skey;
         public SyncKey SyncKey;
     }

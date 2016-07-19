@@ -8,7 +8,7 @@ namespace Wechat.API
 {
     public class User
     {
-        public int Uin;
+        public long Uin;
         public string UserName;
         public string NickName;
         public string HeadImgUrl;

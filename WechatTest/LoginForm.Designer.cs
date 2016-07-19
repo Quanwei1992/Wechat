@@ -32,12 +32,14 @@
             this.button_send_msg_txt = new System.Windows.Forms.Button();
             this.textBox_msg_text = new System.Windows.Forms.TextBox();
             this.button_send_msg_image = new System.Windows.Forms.Button();
+            this.label_status = new System.Windows.Forms.Label();
+            this.button_refreshGroupMemberInfo = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_qr)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox_qr
             // 
-            this.pictureBox_qr.Location = new System.Drawing.Point(226, 82);
+            this.pictureBox_qr.Location = new System.Drawing.Point(77, 50);
             this.pictureBox_qr.Name = "pictureBox_qr";
             this.pictureBox_qr.Size = new System.Drawing.Size(228, 202);
             this.pictureBox_qr.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -49,7 +51,7 @@
             this.comboBox_users.FormattingEnabled = true;
             this.comboBox_users.Location = new System.Drawing.Point(12, 312);
             this.comboBox_users.Name = "comboBox_users";
-            this.comboBox_users.Size = new System.Drawing.Size(728, 20);
+            this.comboBox_users.Size = new System.Drawing.Size(365, 20);
             this.comboBox_users.TabIndex = 1;
             // 
             // button_send_msg_txt
@@ -79,11 +81,32 @@
             this.button_send_msg_image.UseVisualStyleBackColor = true;
             this.button_send_msg_image.Click += new System.EventHandler(this.button_send_msg_image_Click);
             // 
+            // label_status
+            // 
+            this.label_status.Location = new System.Drawing.Point(12, 256);
+            this.label_status.Name = "label_status";
+            this.label_status.Size = new System.Drawing.Size(350, 53);
+            this.label_status.TabIndex = 5;
+            this.label_status.Text = "扫描二维码登陆微信";
+            this.label_status.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // button_refreshGroupMemberInfo
+            // 
+            this.button_refreshGroupMemberInfo.Location = new System.Drawing.Point(24, 381);
+            this.button_refreshGroupMemberInfo.Name = "button_refreshGroupMemberInfo";
+            this.button_refreshGroupMemberInfo.Size = new System.Drawing.Size(107, 23);
+            this.button_refreshGroupMemberInfo.TabIndex = 6;
+            this.button_refreshGroupMemberInfo.Text = "刷新群聊成员";
+            this.button_refreshGroupMemberInfo.UseVisualStyleBackColor = true;
+            this.button_refreshGroupMemberInfo.Click += new System.EventHandler(this.button_refreshGroupMemberInfo_Click);
+            // 
             // LoginForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(752, 603);
+            this.ClientSize = new System.Drawing.Size(411, 461);
+            this.Controls.Add(this.button_refreshGroupMemberInfo);
+            this.Controls.Add(this.label_status);
             this.Controls.Add(this.button_send_msg_image);
             this.Controls.Add(this.textBox_msg_text);
             this.Controls.Add(this.button_send_msg_txt);
@@ -105,6 +128,8 @@
         private System.Windows.Forms.Button button_send_msg_txt;
         private System.Windows.Forms.TextBox textBox_msg_text;
         private System.Windows.Forms.Button button_send_msg_image;
+        private System.Windows.Forms.Label label_status;
+        private System.Windows.Forms.Button button_refreshGroupMemberInfo;
     }
 }
 

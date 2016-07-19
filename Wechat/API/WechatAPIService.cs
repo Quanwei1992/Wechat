@@ -315,5 +315,24 @@ namespace Wechat.API
             var rep = JsonConvert.DeserializeObject<SendMsgImgResponse>(repJsonStr);
             return rep;
         }
+
+        public OplogResponse Oplog(string userName,int cmdID,int op, string pass_ticket, string uin, string sid, string skey, string deviceID)
+        {
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxoplog?pass_ticket={0}";
+            url = string.Format(url, pass_ticket);
+            OplogRequest req = new OplogRequest();
+            req.BaseRequest = new BaseRequest();
+            req.BaseRequest.DeviceID = deviceID;
+            req.BaseRequest.Sid = sid;
+            req.BaseRequest.Uin = uin;
+            req.BaseRequest.Skey = skey;
+            req.UserName = userName;
+            req.CmdId = cmdID;
+            req.OP = op;
+            string requestJson = JsonConvert.SerializeObject(req);
+            string repJsonStr = http.POST_UTF8String(url, requestJson);
+            var rep = JsonConvert.DeserializeObject<OplogResponse>(repJsonStr);
+            return rep;
+        }
     }
 }

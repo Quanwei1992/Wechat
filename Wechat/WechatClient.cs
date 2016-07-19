@@ -208,21 +208,42 @@ namespace Wechat
         }
 
         int upLoadMediaCount = 0;
-        public bool SendMsg(string toUserName, Image img,string imgName) {
+
+        public bool SendMsg(string toUserName, Image img, ImageFormat format = null, string imageName = null)
+        {
+            if (img == null) return false;
+            string fileName = imageName != null ? imageName : "img_" + upLoadMediaCount;
+            var imgFormat = format != null ? format : ImageFormat.Png;
+
+            fileName += "." + imgFormat.ToString().ToLower();
+
             MemoryStream ms = new MemoryStream();
-            img.Save(ms,ImageFormat.Png);
+            img.Save(ms, imgFormat);
             ms.Seek(0, SeekOrigin.Begin);
-            byte[] buffer = new byte[ms.Length];
-            ms.Read(buffer, 0, buffer.Length);
-            ms.Close();
-            
-            var response = api.Uploadmedia(CurrentUser.UserName,toUserName, "WU_FILE_"+upLoadMediaCount,"image/png",2,4,buffer,imgName+".png",mPass_ticket,mWxuin,mWxsid,mSkey,mDeviceID);
+            byte[] data = new byte[ms.Length];
+            int readCount = ms.Read(data,0,data.Length);
+            if (readCount != data.Length) return false;
+
+            string mimetype = "image/" + imgFormat.ToString().ToLower();
+            var response = api.Uploadmedia(CurrentUser.UserName, toUserName, "WU_FILE_" + upLoadMediaCount, mimetype, 2, 4, data, fileName, mPass_ticket, mWxuin, mWxsid, mSkey, mDeviceID);
             if (response != null && response.BaseResponse != null && response.BaseResponse.ret == 0) {
                 upLoadMediaCount++;
-                return true;
+                string mediaId = response.MediaId;
+                ImgMsg msg = new ImgMsg();
+                msg.FromUserName = CurrentUser.UserName;
+                msg.ToUserName = toUserName;
+                msg.MediaId = mediaId;
+                msg.ClientMsgId = DateTime.Now.Millisecond;
+                msg.LocalID = DateTime.Now.Millisecond;
+                msg.Type = 3;
+                var sendImgRep = api.SendMsgImg(msg, mPass_ticket, mWxuin, mWxsid, mSkey, mDeviceID);
+                if (sendImgRep != null && sendImgRep.BaseResponse != null && sendImgRep.BaseResponse.ret == 0) {
+                    return true;
+                }
+                return false;
             } else {
                 return false;
-            }         
+            }
         }
 
     }

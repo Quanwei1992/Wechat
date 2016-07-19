@@ -12,6 +12,7 @@ namespace Wechat.API.RPC
         public BaseRequest BaseRequest;
         public long ClientMediaId;
         public int TotalLen;
+        public int StartPos;
         public int DataLen;
         public int MediaType;
         public string FromUserName;

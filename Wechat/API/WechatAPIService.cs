@@ -267,6 +267,7 @@ namespace Wechat.API
             req.BaseRequest.Skey = skey;
             req.ClientMediaId = getTimestamp(DateTime.Now);
             req.DataLen = buffer.Length;
+            req.StartPos = 0;
             req.TotalLen = buffer.Length;
             req.MediaType = mediaType;
             req.FromUserName = fromUserName;
@@ -281,9 +282,7 @@ namespace Wechat.API
             data.Add("name",fileName);
             data.Add("type", mime_type);
             data.Add("lastModifiedDate", "Thu Mar 17 2016 14:35:28 GMT+0800 (中国标准时间)");
-            data.Add("size",buffer.Length.ToString());
-            data.Add("chunks","1");
-            data.Add("chunk", "0");
+            data.Add("size", buffer.Length.ToString());
             string mt = "doc";
             if (mime_type.StartsWith("image/")) {
                 mt = "pic";
@@ -293,9 +292,27 @@ namespace Wechat.API
             var dataTicketCookie = http.GetCookie("webwx_data_ticket");
             data.Add("webwx_data_ticket", dataTicketCookie.Value);
             data.Add("pass_ticket", pass_ticket);
-            data.Add("uploadmediarequest", requestJson);
-            string repJsonStr = http.UploadFile_UTF8String(url, buffer, fileName, data, Encoding.UTF8);
+            string repJsonStr = http.UploadFile_UTF8String(url, buffer, fileName,mime_type, data, Encoding.UTF8);
             var rep = JsonConvert.DeserializeObject<UploadmediaResponse>(repJsonStr);
+            return rep;
+        }
+
+
+        public SendMsgImgResponse SendMsgImg(ImgMsg msg, string pass_ticket, string uin, string sid, string skey, string deviceID)
+        {
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsendmsgimg?fun=async&f=json&pass_ticket={0}";
+            url = string.Format(url,pass_ticket);
+            SendMsgImgRequest req = new SendMsgImgRequest();
+            req.BaseRequest = new BaseRequest();
+            req.BaseRequest.DeviceID = deviceID;
+            req.BaseRequest.Sid = sid;
+            req.BaseRequest.Uin = uin;
+            req.BaseRequest.Skey = skey;
+            req.Msg = msg;
+            req.Scene = 0;
+            string requestJson = JsonConvert.SerializeObject(req);
+            string repJsonStr = http.POST_UTF8String(url, requestJson);
+            var rep = JsonConvert.DeserializeObject<SendMsgImgResponse>(repJsonStr);
             return rep;
         }
     }

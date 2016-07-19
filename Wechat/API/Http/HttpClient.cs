@@ -148,9 +148,9 @@ namespace Wechat.API.Http
         }
 
 
-        public byte[] UploadFile(string url, byte[] fileBuf,string fileName,NameValueCollection data, Encoding encoding)
+        public byte[] UploadFile(string url, byte[] fileBuf,string fileName,string mime_type,NameValueCollection data, Encoding encoding)
         {
-            string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
+            string boundary = "----WebKitFormBoundary" + DateTime.Now.Ticks.ToString("x");
             byte[] boundarybytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
             byte[] endbytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
 
@@ -158,8 +158,12 @@ namespace Wechat.API.Http
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.ContentType = "multipart/form-data; boundary=" + boundary;
             request.Method = "POST";
+            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36";
+            request.Accept = "*/*";
             request.KeepAlive = true;
-            request.Credentials = CredentialCache.DefaultCredentials;
+            request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
+            request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4,ja;q=0.2");
+
 
             using (Stream stream = request.GetRequestStream()) {
                 //1.1 key/value
@@ -174,7 +178,7 @@ namespace Wechat.API.Http
                 }
 
                 //1.2 file
-                string headerTemplate = "Content-Disposition: form-data; name=\"filename\"; filename=\"{0}\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+                string headerTemplate = "Content-Disposition: form-data; name=\"filename\"; filename=\"{0}\"\r\nContent-Type: "+mime_type+"\r\n\r\n";
 
                 stream.Write(boundarybytes, 0, boundarybytes.Length);
                 string header = string.Format(headerTemplate,fileName);
@@ -203,9 +207,9 @@ namespace Wechat.API.Http
         }
 
 
-        public string UploadFile_UTF8String(string url, byte[] fileBuf, string fileName, NameValueCollection data, Encoding encoding)
+        public string UploadFile_UTF8String(string url, byte[] fileBuf, string fileName,string mime_type, NameValueCollection data, Encoding encoding)
         {
-            var bytes = UploadFile(url,fileBuf,fileName,data,encoding);
+            var bytes = UploadFile(url,fileBuf,fileName,mime_type,data,encoding);
             string utf8str = Encoding.UTF8.GetString(bytes);
             return utf8str;
         }

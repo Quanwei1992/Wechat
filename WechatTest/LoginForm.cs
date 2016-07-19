@@ -12,6 +12,8 @@ using Wechat.API;
 using Wechat;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
+
 namespace WechatTest
 {
     public partial class LoginForm : Form
@@ -167,7 +169,18 @@ namespace WechatTest
             var args = str.Split('|');
             if (args.Length == 2) {
                 string userName = args[1];
-                wc.SendMsg(userName,pictureBox_qr.Image,"qr");
+                OpenFileDialog ofd = new OpenFileDialog();
+                if (ofd.ShowDialog() == DialogResult.OK) {
+                    if (File.Exists(ofd.FileName)) {
+                        var img = Image.FromFile(ofd.FileName);
+                        if (wc.SendMsg(userName, img)) {
+                            Debug.WriteLine("图片消息发送成功!");
+                        } else {
+                            Debug.WriteLine("图片消息发送失败!");
+                        }
+                    }
+                }
+                
             }
         }
     }

@@ -28,9 +28,26 @@ namespace Wechat
         //---------------------------------------------------------
         // 所有缓存的用户信息
         private Dictionary<string, User> mCachedUsers = new Dictionary<string, User>();
-        
+
         // 联系人列表
         private List<string> mContactList = new List<string>();
+        // 群聊列表
+        private List<string> mGroupList = new List<string>();
+        public string[] ContactList
+        {
+            get
+            {
+                return mContactList.ToArray();
+            }
+        }
+
+        public string[] GroupList
+        {
+            get
+            {
+                return mGroupList.ToArray();
+            }
+        }
 
         // 最近联系人
         private List<string> mRecentContacts = new List<string>();
@@ -51,6 +68,13 @@ namespace Wechat
 
         private void CacheUser(User user)
         {
+
+            if (user.UserName.StartsWith("@@")) { //群聊
+                if (!mGroupList.Contains(user.UserName)) {
+                    mGroupList.Add(user.UserName);
+                }
+            }
+
             if (!mCachedUsers.ContainsKey(user.UserName)) {
                 mCachedUsers[user.UserName] = user;
                 OnAddUser?.Invoke(user);
@@ -79,11 +103,22 @@ namespace Wechat
             // ----------1.登陆
 
             do {
-                Debug.WriteLine("[Wechat] 正在生成二维码 ....");
-                string session = api.GetNewQRLoginSessionID();          
+                Debug.Write("[*] 正在获取Session ....");
+                string session = api.GetNewQRLoginSessionID();
+                if (!string.IsNullOrWhiteSpace(session)) {
+                    Debug.Write("成功\n");
+                } else {
+                    continue;
+                }
+                Debug.Write("[*] 正在生成二维码 ....");
                 var QRImg = api.GetQRCodeImage(session);
-                OnGetQRCodeImage?.Invoke(QRImg);
-                Debug.WriteLine("[Wechat] 正在等待扫码 ....");
+                if (QRImg != null) {
+                    Debug.Write("成功\n");
+                } else {
+                    continue;
+                }
+                Debug.Write("[*] 正在等待扫码 ....");
+                OnGetQRCodeImage?.Invoke(QRImg);          
                 //login check
                 while (true) {
                     var loginResult = api.Login(session);
@@ -102,7 +137,7 @@ namespace Wechat
                         mBaseReq.DeviceID = string.Format("e{0}{1}{2}", rand1, rand2, rand3);
                         mPass_ticket = redirectResult.pass_ticket;
                         IsLogin = true;
-                        Debug.WriteLine("[Wechat] 登陆成功 ....");
+                        Debug.Write("已确认\n");
                         break;
                     } else if (loginResult.code == 201) {
                         // 已扫描,但是未确认登录
@@ -112,10 +147,11 @@ namespace Wechat
                         memoryStream.Write(base64_image_bytes, 0, base64_image_bytes.Length);
                         var image = Image.FromStream(memoryStream);
                         OnUserScanQRCode?.Invoke(image);
-                        Debug.WriteLine("[Wechat] 已扫描 ....");
+                        Debug.Write("已扫码\n");
+                        Debug.Write("[*] 正在等待确认 ....");
                     } else {
                         // 超时
-                        Debug.WriteLine("[Wechat] 登陆超时 ....");
+                        Debug.Write("超时\n");
                         break;
                     }
                 }
@@ -123,43 +159,22 @@ namespace Wechat
 
 
             // ----------2.初始化
-            Debug.WriteLine("[Wechat] 正在初始化 ....");
+            Debug.Write("[*] 正在初始化 ....");
             var initResult = api.Init(mPass_ticket, mBaseReq);
-            if (initResult.BaseResponse.ret != 0) {
-                Debug.WriteLine("[Wechat] 初始化失败. 错误码:" + initResult.BaseResponse.ret);
+            if (initResult.BaseResponse.ret == 0) {
+                Debug.Write("成功\n");
+            } else {
+                Debug.Write("失败.错误码:" + initResult.BaseResponse.ret);
                 return;
             }
 
             CurrentUser = initResult.User;
 
-            // ----------3.开启状态通知
-            Debug.WriteLine("[Wechat] 正在开启系统通知 ....");
-            var statusNotifyRep = api.Statusnotify(CurrentUser.UserName, CurrentUser.UserName, mPass_ticket, mBaseReq);
-            if (statusNotifyRep != null && statusNotifyRep.BaseResponse != null && statusNotifyRep.BaseResponse.ret != 0) {
-                Debug.WriteLine("[Wechat] 开启系统通知失败. 错误码:" + statusNotifyRep.BaseResponse.ret);
-                return;
-            }
 
-
-            // ----------4.获得联系人列表
-            Debug.WriteLine("[Wechat] 正在获取联系人列表 ....");
-            var getContactResult = api.GetContact(mPass_ticket, mBaseReq.Skey);
-            if (getContactResult.BaseResponse.ret != 0) {
-                Debug.WriteLine("[Wechat] 获取联系人列表失败. 错误码:" + getContactResult.BaseResponse.ret);
-                return;
-            }
-
-
-            
-            foreach (var user in getContactResult.MemberList) {
-                CacheUser(user);
-                mContactList.Add(user.UserName);
-            }
-            
             // 最近联系人
             mRecentContacts.Clear();
-            if (initResult.ContactList != null) {             
-                foreach (var user in initResult.ContactList){
+            if (initResult.ContactList != null) {
+                foreach (var user in initResult.ContactList) {
                     CacheUser(user);
                     mRecentContacts.Add(user.UserName);
                 }
@@ -176,10 +191,45 @@ namespace Wechat
             }
 
 
+
+            // ----------3.开启状态通知
+            Debug.Write("[*] 正在开启系统通知 ....");
+            var statusNotifyRep = api.Statusnotify(CurrentUser.UserName, CurrentUser.UserName, mPass_ticket, mBaseReq);
+            if (statusNotifyRep != null && statusNotifyRep.BaseResponse != null && statusNotifyRep.BaseResponse.ret == 0){
+                Debug.Write("成功\n");
+            } else {
+                Debug.Write("失败.错误码:" + statusNotifyRep.BaseResponse.ret);
+                return;
+            }
+
+
+            // ----------4.获得联系人列表
+            Debug.Write("[*] 正在获取联系人列表 ....");
+            var getContactResult = api.GetContact(mPass_ticket, mBaseReq.Skey);
+            if (getContactResult!=null && getContactResult.BaseResponse!=null && getContactResult.BaseResponse.ret == 0) {
+                Debug.Write("成功\n");
+                Debug.WriteLine("[*] 共有 " + getContactResult.MemberCount + " 个联系人.");
+            } else {
+                Debug.Write("失败. 错误码:" + getContactResult.BaseResponse.ret);
+                return;
+            }
+            foreach (var user in getContactResult.MemberList) {
+                CacheUser(user);
+                mContactList.Add(user.UserName);
+            }
+
+            Debug.Write("[*] 正在请求群聊成员详细信息 ....\n");
+            //-----------5.批量获取群组详细信息
+            foreach (var user in mCachedUsers.Values) {
+                if (user.UserName.StartsWith("@@")) {
+                    RefreshGroupMemberInfo(user.UserName);
+                }
+            }
+
             OnLoginSucess?.Invoke();
             SyncKey syncKey = initResult.SyncKey;
-            // ----------5.同步主循环
-            Debug.WriteLine("[Wechat] 进入同步循环 ....");
+            // ----------6.同步主循环
+            Debug.WriteLine("[*] 进入同步循环 ....");
             while (true){
                 bool hasInitMsg = false;
                 // 同步
@@ -187,7 +237,7 @@ namespace Wechat
                     var syncCheckResult = api.SyncCheck(syncKey.List, mBaseReq);
                     if (syncCheckResult == null) continue;
                     if (syncCheckResult.retcode != "0") {
-                        Debug.WriteLine("[Wechat] 登陆已失效,请重新登陆 ....");
+                        Debug.WriteLine("[*] 登陆已失效,请重新登陆 ....");
                         IsLogin = false;
                         mCachedUsers.Clear();
                         mRecentContacts.Clear();
@@ -195,10 +245,10 @@ namespace Wechat
                         return;
                     }
                     if (syncCheckResult.retcode == "0" && syncCheckResult.selector != "0") {
-                        Debug.WriteLine(string.Format("[Wechat] 同步检查 RetCode:{0} Selector:{1}",syncCheckResult.retcode, syncCheckResult.selector));
+                        Debug.WriteLine(string.Format("[*] 同步检查 RetCode:{0} Selector:{1}",syncCheckResult.retcode, syncCheckResult.selector));
                         var syncResult = api.Sync(syncKey,mPass_ticket, mBaseReq);
                         syncKey = syncResult.SyncKey;
-                        Debug.WriteLine(string.Format("[Wechat] 同步结果 AddMsgCount:{0} ModContactCount:{1}", syncResult.AddMsgCount, syncResult.ModContactCount));
+                        Debug.WriteLine(string.Format("[*] 同步结果 AddMsgCount:{0} ModContactCount:{1}", syncResult.AddMsgCount, syncResult.ModContactCount));
                         // addmsg
                         if (syncResult.AddMsgCount > 0) {
                             foreach (var msg in syncResult.AddMsgList) {
@@ -228,13 +278,20 @@ namespace Wechat
                 }
                 if (waitingToCacheUserList.Count > 0) {
                     // 获得群详细信息
-                    Debug.WriteLine("[Wechat] 正在获取联系人详细信息 ....");
+                    Debug.WriteLine("[*] 正在获取联系人详细信息 ....");
+
+                    foreach (var userName in waitingToCacheUserList) {
+                        if (userName.StartsWith("@@")) {
+                            RefreshGroupMemberInfo(userName);
+                        }
+                    }
+
                     var batchResult = api.BatchGetContact(waitingToCacheUserList.ToArray(), mPass_ticket, mBaseReq);
                     if (batchResult != null && batchResult.ContactList != null) {
                         foreach (var user in batchResult.ContactList) {
                             CacheUser(user);
                         }
-                        Debug.WriteLine("[Wechat] 获取到联系人详细信息 "+batchResult.Count+"个");
+                        Debug.WriteLine("[*] 获取到联系人详细信息 "+batchResult.Count+"个");
                     }
                     waitingToCacheUserList.Clear();
                 }

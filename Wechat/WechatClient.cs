@@ -84,6 +84,14 @@ namespace Wechat
             }
         }
 
+        public User GetContact(string userName)
+        {
+            if (mCachedUsers.ContainsKey(userName)) {
+                return mCachedUsers[userName];
+            }
+            return null;
+        }
+
         //首次初始化已完成(收到MsgType=51的消息,且获取完Contact)
         private bool firstInited = false;
 

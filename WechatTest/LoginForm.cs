@@ -97,6 +97,7 @@ namespace WechatTest
 
             wc.OnUserScanQRCode = (image) => {
                 RunInMainthread(() => {
+
                     pictureBox_qr.Image = image;
                     label_status.Text = "扫描成功\n请在手机上确认登陆";
                 });

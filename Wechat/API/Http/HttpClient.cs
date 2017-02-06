@@ -147,7 +147,7 @@ namespace Wechat.API.Http
             return lstCookies;
         }
 
-
+        
         public byte[] UploadFile(string url, byte[] fileBuf,string fileName,string mime_type,NameValueCollection data, Encoding encoding)
         {
             string boundary = "----WebKitFormBoundary" + DateTime.Now.Ticks.ToString("x");
@@ -163,8 +163,6 @@ namespace Wechat.API.Http
             request.KeepAlive = true;
             request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
             request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4,ja;q=0.2");
-
-
             using (Stream stream = request.GetRequestStream()) {
                 //1.1 key/value
                 string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";

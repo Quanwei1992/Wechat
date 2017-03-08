@@ -27,7 +27,7 @@ namespace Wechat.API
         public int StarFriend;
         public int AppAccountFlag;
         public int Statues;
-        public int AttrStatus;
+        public long AttrStatus;
         public string Province;
         public string City;
         public string Alias;

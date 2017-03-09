@@ -11,16 +11,17 @@ using System.Threading;
 
 namespace TestWechatGame.PKTEN
 {
-    public class PKTENGame
+    public class LotteryCenter
     {
 
         #region single instance
-        private static PKTENGame mInstance;
-        private PKTENGame() { }
-        public static PKTENGame Instance{
+        private static LotteryCenter mInstance;
+        private LotteryCenter() { }
+        public static LotteryCenter Instance
+        {
             get {
                 if (mInstance == null) {
-                    mInstance = new PKTENGame();
+                    mInstance = new LotteryCenter();
                 }
                 return mInstance;
             }

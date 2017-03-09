@@ -310,7 +310,10 @@ namespace Wechat.API
         {
             string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?redirect=1&type=0&skey="+ System.Web.HttpUtility.UrlEncode(skey);
             string requestStr = string.Format("sid={0}&uin={1}",sid,uin);
-             http.POST_UTF8String(url, requestStr);
+            http.POST_UTF8String(url, requestStr);
+
+            url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?redirect=1&type=1&skey=" + System.Web.HttpUtility.UrlEncode(skey);
+            http.POST_UTF8String(url, requestStr);
         }
 
     }

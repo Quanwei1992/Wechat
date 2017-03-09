@@ -30,6 +30,8 @@
             this.comboBox_group = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.button_run = new System.Windows.Forms.Button();
+            this.pictureBox_wechat = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_wechat)).BeginInit();
             this.SuspendLayout();
             // 
             // comboBox_group
@@ -59,11 +61,21 @@
             this.button_run.UseVisualStyleBackColor = true;
             this.button_run.Click += new System.EventHandler(this.button_run_Click);
             // 
+            // pictureBox_wechat
+            // 
+            this.pictureBox_wechat.Location = new System.Drawing.Point(123, 58);
+            this.pictureBox_wechat.Name = "pictureBox_wechat";
+            this.pictureBox_wechat.Size = new System.Drawing.Size(270, 270);
+            this.pictureBox_wechat.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox_wechat.TabIndex = 3;
+            this.pictureBox_wechat.TabStop = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(514, 439);
+            this.Controls.Add(this.pictureBox_wechat);
             this.Controls.Add(this.button_run);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.comboBox_group);
@@ -71,6 +83,7 @@
             this.Text = "MainForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_wechat)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -81,6 +94,7 @@
         private System.Windows.Forms.ComboBox comboBox_group;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button_run;
+        private System.Windows.Forms.PictureBox pictureBox_wechat;
     }
 }
 

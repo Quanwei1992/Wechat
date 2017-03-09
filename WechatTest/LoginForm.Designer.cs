@@ -96,7 +96,7 @@
             this.button_refreshGroupMemberInfo.Name = "button_refreshGroupMemberInfo";
             this.button_refreshGroupMemberInfo.Size = new System.Drawing.Size(107, 23);
             this.button_refreshGroupMemberInfo.TabIndex = 6;
-            this.button_refreshGroupMemberInfo.Text = "刷新群聊成员";
+            this.button_refreshGroupMemberInfo.Text = "设置备注名";
             this.button_refreshGroupMemberInfo.UseVisualStyleBackColor = true;
             this.button_refreshGroupMemberInfo.Click += new System.EventHandler(this.button_refreshGroupMemberInfo_Click);
             // 

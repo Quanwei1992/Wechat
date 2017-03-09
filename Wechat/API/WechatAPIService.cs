@@ -288,7 +288,9 @@ namespace Wechat.API
             return rep;
         }
 
-        public OplogResponse Oplog(string userName,int cmdID,int op, string pass_ticket,BaseRequest baseReq)
+
+  
+        public OplogResponse Oplog(string userName,int cmdID,int op,string RemarkName, string pass_ticket,BaseRequest baseReq)
         {
             string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxoplog?pass_ticket={0}";
             url = string.Format(url, pass_ticket);
@@ -297,10 +299,13 @@ namespace Wechat.API
             req.UserName = userName;
             req.CmdId = cmdID;
             req.OP = op;
+            req.RemarkName = RemarkName;
             string requestJson = JsonConvert.SerializeObject(req);
             string repJsonStr = http.POST_UTF8String(url, requestJson);
             var rep = JsonConvert.DeserializeObject<OplogResponse>(repJsonStr);
             return rep;
         }
+
+
     }
 }

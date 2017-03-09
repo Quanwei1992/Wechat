@@ -216,7 +216,7 @@ namespace Wechat
             var getContactResult = api.GetContact(mPass_ticket, mBaseReq.Skey);
             if (getContactResult!=null && getContactResult.BaseResponse!=null && getContactResult.BaseResponse.ret == 0) {
                 Debug.Write("成功\n");
-                Debug.WriteLine("[*] 共有 " + getContactResult.MemberCount + " 个联系人.");
+                Debug.WriteLine("[*] 共有 " + getContactResult.MemberCount + " 个联系人.");        
             } else {
                 Debug.Write("失败. 错误码:" + getContactResult.BaseResponse.ret);
                 return;
@@ -226,13 +226,6 @@ namespace Wechat
                 mContactList.Add(user.UserName);
             }
 
-            Debug.Write("[*] 正在请求群聊成员详细信息 ....\n");
-            //-----------5.批量获取群组详细信息
-            foreach (var user in mCachedUsers.Values) {
-                if (user.UserName.StartsWith("@@")) {
-                    RefreshGroupMemberInfo(user.UserName);
-                }
-            }
 
             OnLoginSucess?.Invoke();
             SyncKey syncKey = initResult.SyncKey;
@@ -240,6 +233,7 @@ namespace Wechat
             Debug.WriteLine("[*] 进入同步循环 ....");
             while (true){
                 bool hasInitMsg = false;
+                bool hasInitContactDetailInfo = false;
                 // 同步
                 if (syncKey.Count > 0) {                  
                     var syncCheckResult = api.SyncCheck(syncKey.List, mBaseReq);
@@ -285,28 +279,23 @@ namespace Wechat
                     }
                 }
                 if (waitingToCacheUserList.Count > 0) {
-                    // 获得群详细信息
-                    Debug.WriteLine("[*] 正在获取联系人详细信息 ....");
-
-                    foreach (var userName in waitingToCacheUserList) {
-                        if (userName.StartsWith("@@")) {
-                            RefreshGroupMemberInfo(userName);
-                        }
-                    }
 
                     var batchResult = api.BatchGetContact(waitingToCacheUserList.ToArray(), mPass_ticket, mBaseReq);
                     if (batchResult != null && batchResult.ContactList != null) {
                         foreach (var user in batchResult.ContactList) {
                             CacheUser(user);
                         }
-                        Debug.WriteLine("[*] 获取到联系人详细信息 "+batchResult.Count+"个");
+                        Debug.WriteLine("[*] 获取到联系人详细信息 " + batchResult.Count + "个");
                     }
                     waitingToCacheUserList.Clear();
+                    hasInitContactDetailInfo = true;
+                } else {
+                    hasInitContactDetailInfo = true;
                 }
 
                 
                 // 初始化完成回调
-                if (hasInitMsg && !firstInited) {
+                if (hasInitMsg && !firstInited && hasInitContactDetailInfo) {
                     firstInited = true;
                     OnInitComplate?.Invoke();
                 }
@@ -314,13 +303,21 @@ namespace Wechat
         }
 
         /// <summary>
-        /// 刷新群聊成员信息(Sync的时候可以返回群聊成员的Uin)
+        /// 置顶群聊
         /// </summary>
         /// <param name="groupUserName"></param>
-        public void RefreshGroupMemberInfo(string groupUserName)
+        public bool StickyPost(string groupUserName)
         {
-            api.Oplog(groupUserName, 3, 0, mPass_ticket, mBaseReq);
+            var rep = api.Oplog(groupUserName, 3, 0, null,mPass_ticket,mBaseReq);
+            return rep.BaseResponse.ret == 0;
         }
+
+        public bool SetRemarkName(string userName, string remarkName)
+        {
+            var rep = api.Oplog(userName, 2, 0, remarkName, mPass_ticket, mBaseReq);
+            return rep.BaseResponse.ret == 0;
+        }
+
 
         public bool SendMsg(string toUserName,string content)
         {

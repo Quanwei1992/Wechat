@@ -198,9 +198,8 @@ namespace WechatTest
             var args = str.Split('|');
             if (args.Length == 2) {
                 string userName = args[1];
-                if (userName.StartsWith("@@")) {
-                    wc.RefreshGroupMemberInfo(userName);
-                }
+                bool ret = wc.SetRemarkName(userName, "HelloSB");
+                MessageBox.Show("设置备注名：" + ret);
             }
         }
     }

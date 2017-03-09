@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using HtmlAgilityPack;
+using System.Threading;
 
 namespace TestWechatGame.PKTEN
 {
@@ -32,8 +33,8 @@ namespace TestWechatGame.PKTEN
         #endregion
 
         private PKTENAward mLastAward = null;
-
-
+        private bool IsRunning = true;
+        private Thread mMainloopThread;
 
 
         /// <summary>
@@ -41,8 +42,28 @@ namespace TestWechatGame.PKTEN
         /// </summary>
         public void RunGame()
         {
-            updateAward();
+            if (mMainloopThread != null) return;
+            IsRunning = true;
+            mMainloopThread = new Thread(MainLoop);
+            mMainloopThread.Start();
+        }
 
+        public void StopGame()
+        {
+            IsRunning = false;
+            mMainloopThread.Abort();
+            mMainloopThread = null;
+        }
+
+
+
+        private void MainLoop()
+        {
+            while (IsRunning)
+            {
+                updateAward();
+                Thread.Sleep(1000);
+            }
         }
 
         private void updateAward()
@@ -50,6 +71,7 @@ namespace TestWechatGame.PKTEN
             var award = getLatestAward();
             if (mLastAward == null) {
                 mLastAward = award;
+                OnNewAward?.Invoke(award);
             }
             if (award.No > mLastAward.No) {
                 mLastAward = award;

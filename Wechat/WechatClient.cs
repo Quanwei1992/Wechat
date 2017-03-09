@@ -375,5 +375,10 @@ namespace Wechat
             }
         }
 
+        public void Logout()
+        {
+            api.Logout(mBaseReq.Skey, mBaseReq.Sid, mBaseReq.Uin);
+        }
+
     }
 }

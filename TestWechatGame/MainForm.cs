@@ -15,91 +15,52 @@ namespace TestWechatGame
 {
     public partial class MainForm : Form
     {
+
+        WechatClient client = new WechatClient();
+        
+
         public MainForm()
         {
             InitializeComponent();
         }
 
 
-        /// 清除文本中Html的标签  
-        /// </summary>  
-        /// <param name="Content"></param>  
-        /// <returns></returns>  
-        protected string ClearHtml(string Content)
-        {
-            Content = Zxj_ReplaceHtml("&#[^>]*;", "", Content);
-            Content = Zxj_ReplaceHtml("</?marquee[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?object[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?param[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?embed[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?table[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml(" ", "", Content);
-            Content = Zxj_ReplaceHtml("</?tr[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?th[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?p[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?a[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?img[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?tbody[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?li[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?span[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?div[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?th[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?td[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?script[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("(javascript|jscript|vbscript|vbs):", "", Content);
-            Content = Zxj_ReplaceHtml("on(mouse|exit|error|click|key)", "", Content);
-            Content = Zxj_ReplaceHtml("<\\?xml[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("<\\/?[a-z]+:[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?font[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?b[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?u[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?i[^>]*>", "", Content);
-            Content = Zxj_ReplaceHtml("</?strong[^>]*>", "", Content);
-            string clearHtml = Content;
-            return clearHtml;
-        }
-
-        /// <summary>  
-        /// 清除文本中的Html标签  
-        /// </summary>  
-        /// <param name="patrn">要替换的标签正则表达式</param>  
-        /// <param name="strRep">替换为的内容</param>  
-        /// <param name="content">要替换的内容</param>  
-        /// <returns></returns>  
-        private string Zxj_ReplaceHtml(string patrn, string strRep, string content)
-        {
-            if (string.IsNullOrEmpty(content)) {
-                content = "";
-            }
-            Regex rgEx = new Regex(patrn, RegexOptions.IgnoreCase);
-            string strTxt = rgEx.Replace(content, strRep);
-            return strTxt;
-        }
-
-
         private void MainForm_Load(object sender, EventArgs e)
         {
-            var wc = new WechatClient();
-            wc.OnInitComplate += () => {
-                var contactList = wc.ContactList;
-                foreach (var contactUserName in contactList) {
-                    if (contactUserName.StartsWith("@@")) {
-                        var user = wc.GetContact(contactUserName);
-                        RunInMainthread(() => {
-                            comboBox_group.Items.Add(user.NickName);
-                        });
-                    }
-   
-                }
+            client.OnInitComplate += () => {
+                RunInMainthread(()=> {
+                    UpdateGroups();
+                });
+
             };
-            LoginForm loginForm = new LoginForm(wc);
+            LoginForm loginForm = new LoginForm(client);
             loginForm.ShowDialog(this);
-
-
-
 
         }
 
+        DataTable mGroupsTable = new DataTable();
+        void UpdateGroups()
+        {
+            mGroupsTable.Clear();
+            mGroupsTable.Columns.Add("UserName");
+            mGroupsTable.Columns.Add("DisplayName");
+
+            var contactList = client.ContactList;
+            foreach (var contactUserName in contactList) {
+                if (contactUserName.StartsWith("@@")) {
+                    var user = client.GetContact(contactUserName);
+                    DataRow dr = mGroupsTable.NewRow();
+                    dr["UserName"] = user.UserName;
+                    dr["DisplayName"] = Utils.ClearHtml(user.NickName);
+                    mGroupsTable.Rows.Add(dr);
+                }
+            }
+
+            comboBox_group.DataSource = mGroupsTable;//设置数据源
+            comboBox_group.DisplayMember = "DisplayName";//设置显示列
+            comboBox_group.ValueMember = "UserName";//设置实际值
+            comboBox_group.DropDownStyle = ComboBoxStyle.DropDownList;
+        }
 
 
         void RunAsync(Action action)
@@ -116,9 +77,36 @@ namespace TestWechatGame
             }));
         }
 
-        private void button_update_group_Click(object sender, EventArgs e)
+        private void button_run_Click(object sender, EventArgs e)
+        {
+            if (button_run.Text == "启动") {
+                button_run.Text = "停止";
+                PKTENGame.Instance.OnNewAward += OnNewAward;
+                PKTENGame.Instance.RunGame();
+                comboBox_group.Enabled = false;
+            } else{
+                button_run.Text = "启动";
+                PKTENGame.Instance.OnNewAward -= OnNewAward;
+                PKTENGame.Instance.StopGame();
+                comboBox_group.Enabled = true;
+            }
+
+        }
+
+
+        private void OnNewAward(PKTENAward award)
         {
             
+            RunInMainthread(() => {
+                string userName = comboBox_group.SelectedValue as string;
+                client.SendMsg(userName, award.ToString());
+            });
+
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            client.Logout();
         }
     }
 }

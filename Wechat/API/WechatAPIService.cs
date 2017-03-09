@@ -306,6 +306,12 @@ namespace Wechat.API
             return rep;
         }
 
+        public void Logout(string skey,string sid,string uin)
+        {
+            string url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxlogout?redirect=1&type=0&skey="+ System.Web.HttpUtility.UrlEncode(skey);
+            string requestStr = string.Format("sid={0}&uin={1}",sid,uin);
+             http.POST_UTF8String(url, requestStr);
+        }
 
     }
 }

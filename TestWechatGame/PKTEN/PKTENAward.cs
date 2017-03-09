@@ -19,5 +19,16 @@ namespace TestWechatGame.PKTEN
         /// 开奖时间
         /// </summary>
         public DateTime date;
+
+        public override string ToString()
+        {
+            string awardNumber = "";
+            foreach (var num in AwardNumbers) {
+                awardNumber += num + ",";
+            }
+            return string.Format("期号:{0} 开奖号码:{1} 开奖时间：{2}", No, awardNumber, date);
+        }
+
+
     }
 }

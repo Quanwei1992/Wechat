@@ -44,7 +44,7 @@ namespace TestWechatGame
 
             wc.OnInitComplate += () => {
                 RunInMainthread(() => {
-                    this.Close();
+                    this.Visible = false;
                 });
             };
             RunAsync(() => {

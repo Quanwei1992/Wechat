@@ -14,58 +14,20 @@ namespace TestWechatGame.PKTEN
     public class LotteryCenter
     {
 
-        #region single instance
-        private static LotteryCenter mInstance;
-        private LotteryCenter() { }
-        public static LotteryCenter Instance
-        {
-            get {
-                if (mInstance == null) {
-                    mInstance = new LotteryCenter();
-                }
-                return mInstance;
-            }
-        }
-        #endregion
-
 
         #region Callbacks
         public Action<PKTENAward> OnNewAward;
         #endregion
 
         private PKTENAward mLastAward = null;
-        private bool IsRunning = true;
-        private Thread mMainloopThread;
 
 
-        /// <summary>
-        /// 启动游戏
-        /// </summary>
-        public void RunGame()
+
+        public void Update()
         {
-            if (mMainloopThread != null) return;
-            IsRunning = true;
-            mMainloopThread = new Thread(MainLoop);
-            mMainloopThread.Start();
+            updateAward();
         }
 
-        public void StopGame()
-        {
-            IsRunning = false;
-            mMainloopThread.Abort();
-            mMainloopThread = null;
-        }
-
-
-
-        private void MainLoop()
-        {
-            while (IsRunning)
-            {
-                updateAward();
-                Thread.Sleep(1000);
-            }
-        }
 
         private void updateAward()
         {

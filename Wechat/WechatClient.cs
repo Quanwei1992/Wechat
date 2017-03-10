@@ -244,6 +244,7 @@ namespace Wechat
                         mCachedUsers.Clear();
                         mRecentContacts.Clear();
                         mContactList.Clear();
+                        Run();
                         return;
                     }
                     if (syncCheckResult.retcode == "0" && syncCheckResult.selector != "0") {

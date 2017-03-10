@@ -10,6 +10,12 @@ namespace TestWechatGame.Frameworks
     {
         public Action<WeChatApp, EventArgs> mAppEventCallback;
         private WechatClient mClient = new Wechat.WechatClient();
+        private System.Diagnostics.Stopwatch mStopWatch = new System.Diagnostics.Stopwatch();
+        private Thread mWechatThread = null;
+        private bool IsRunning = true;
+        private Thread mMainLoopThread = null;
+
+
         protected WechatClient Client
         {
             get
@@ -17,17 +23,29 @@ namespace TestWechatGame.Frameworks
                 return mClient;
             }
         }
-        private Thread mWechatThread = null;
-        private bool IsRunning = true;
-        private Thread mMainLoopThread = null;
+
+        public float Time
+        {
+            get {
+                return mStopWatch.ElapsedMilliseconds / 1000.0f;
+            }
+        }
+
+
+
+
 
         public WeChatApp(Action<WeChatApp, EventArgs> eventCallback)
         {
             mAppEventCallback = eventCallback;
         }
 
+
+
+
         public virtual void Run()
         {
+            mStopWatch.Start();
             Init();
             mClient.OnGetQRCodeImage = (QRImage) => {
                 if (mAppEventCallback != null) {
@@ -85,7 +103,6 @@ namespace TestWechatGame.Frameworks
 
         protected virtual void HandleMessage(Wechat.API.AddMsg msg)
         {
-            Console.Write(msg.Content);
         }
 
 

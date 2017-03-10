@@ -65,6 +65,7 @@ namespace Wechat.API.Http
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "post";
                 request.ContentLength = request_body.Length;
+                request.KeepAlive = true;
 
                 Stream request_stream = request.GetRequestStream();
 

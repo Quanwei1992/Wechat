@@ -31,8 +31,12 @@ namespace Wechat.API
             string url = "https://login.weixin.qq.com/jslogin?appid=wx782c26e4c19acffb";
             byte[] bytes = http.GET(url);
             string str = Encoding.UTF8.GetString(bytes);
-            string sessionID = str.Split(new string[] { "\"" }, StringSplitOptions.None)[1];
-            return sessionID;
+            var pairs = str.Split(new string[] { "\"" }, StringSplitOptions.None);
+            if (pairs.Length >= 2) {
+                string sessionID = pairs[1];
+                return sessionID;
+            }
+            return null;
         }
 
         /// <summary>

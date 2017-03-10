@@ -82,10 +82,7 @@ namespace TestWechatGame.PKTEN
         private void HandleGroupMessage(string userName, string msg)
         {
             Console.WriteLine(string.Format("UserName:{0} Msg:{1}", userName,msg));
-            if (!msg.StartsWith("Simsimi:")) {
-                var rep = WechatTest.Simsimi.say(msg);
-                Client.SendMsg(mGroup.UserName, "Simsimi:" + rep.respSentence);
-            }
+            
 
         }
 

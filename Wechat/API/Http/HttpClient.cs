@@ -23,6 +23,7 @@ namespace Wechat.API.Http
         {
             try {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.KeepAlive = true;
                 request.Method = "get";
 
                 if (mCookiesContainer == null) {
@@ -78,18 +79,10 @@ namespace Wechat.API.Http
 
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 Stream response_stream = response.GetResponseStream();
-
-                int count = (int)response.ContentLength;
-                int offset = 0;
-                byte[] buf = new byte[count];
-                while (count > 0)  //读取返回数据
-                {
-                    int n = response_stream.Read(buf, offset, count);
-                    if (n == 0) break;
-                    count -= n;
-                    offset += n;
-                }
-                return buf;
+                MemoryStream ms = new MemoryStream();
+                response_stream.CopyTo(ms);
+                response_stream.Close();
+                return ms.GetBuffer();
             } catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine(e);
                 return new byte[] { 0 };
@@ -195,6 +188,11 @@ namespace Wechat.API.Http
                 offset += n;
             }
             return buf;
+        }
+
+        public void ClearCookie()
+        {
+            mCookiesContainer = null;
         }
 
 

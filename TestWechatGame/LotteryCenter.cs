@@ -85,4 +85,11 @@ namespace TestWechatGame.PKTEN
 
 
     }
+
+    public class PKTENAward
+    {
+        public int No;
+        public DateTime date;
+        public int[] AwardNumbers;
+    }
 }

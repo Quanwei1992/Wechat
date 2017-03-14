@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestWechatGame.PKTEN
+namespace Wechat
 {
-    public class Order
+    public class Group : Contact
     {
-        
+        public Contact[] Members { get; set; }
     }
 }

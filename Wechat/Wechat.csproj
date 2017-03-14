@@ -80,7 +80,12 @@
     <Compile Include="API\Result\LoginResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="tools\UniversalTool.cs" />
-    <Compile Include="WechatClient.cs" />
+    <Compile Include="Wechat\Contact.cs" />
+    <Compile Include="Wechat\Events.cs" />
+    <Compile Include="Wechat\Group.cs" />
+    <Compile Include="Wechat\Message.cs" />
+    <Compile Include="Wechat\WeChatClient.cs" />
+    <Compile Include="Wechat\WechatClient_old.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -390,5 +390,92 @@ namespace Wechat
             return members.ToArray();
 
         }
+
+
+
+        /// <summary>
+        /// 置顶群聊
+        /// </summary>
+        /// <param name="groupUserName"></param>
+        public bool StickyPost(string groupUserName)
+        {
+            var rep = mAPIService.Oplog(groupUserName, 3, 0, null, mPass_ticket, mBaseReq);
+            return rep.BaseResponse.ret == 0;
+        }
+
+        public bool SetRemarkName(string userName, string remarkName)
+        {
+            var rep = mAPIService.Oplog(userName, 2, 0, remarkName, mPass_ticket, mBaseReq);
+            return rep.BaseResponse.ret == 0;
+        }
+
+
+        public bool SendMsg(string toUserName, string content)
+        {
+            Msg msg = new Msg();
+            msg.FromUserName = Self.ID;
+            msg.ToUserName = toUserName;
+            msg.Content = content;
+            msg.ClientMsgId = DateTime.Now.Millisecond;
+            msg.LocalID = DateTime.Now.Millisecond;
+            msg.Type = 1;//type 1 文本消息
+            var response = mAPIService.SendMsg(msg, mPass_ticket, mBaseReq);
+            if (response != null && response.BaseResponse != null && response.BaseResponse.ret == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        int upLoadMediaCount = 0;
+
+        public bool SendMsg(string toUserName, Image img, ImageFormat format = null, string imageName = null)
+        {
+            if (img == null) return false;
+            string fileName = imageName != null ? imageName : "img_" + upLoadMediaCount;
+            var imgFormat = format != null ? format : ImageFormat.Png;
+
+            fileName += "." + imgFormat.ToString().ToLower();
+
+            MemoryStream ms = new MemoryStream();
+            img.Save(ms, imgFormat);
+            ms.Seek(0, SeekOrigin.Begin);
+            byte[] data = new byte[ms.Length];
+            int readCount = ms.Read(data, 0, data.Length);
+            if (readCount != data.Length) return false;
+
+            string mimetype = "image/" + imgFormat.ToString().ToLower();
+            var response = mAPIService.Uploadmedia(Self.ID, toUserName, "WU_FILE_" + upLoadMediaCount, mimetype, 2, 4, data, fileName, mPass_ticket, mBaseReq);
+            if (response != null && response.BaseResponse != null && response.BaseResponse.ret == 0)
+            {
+                upLoadMediaCount++;
+                string mediaId = response.MediaId;
+                ImgMsg msg = new ImgMsg();
+                msg.FromUserName = Self.ID;
+                msg.ToUserName = toUserName;
+                msg.MediaId = mediaId;
+                msg.ClientMsgId = DateTime.Now.Millisecond;
+                msg.LocalID = DateTime.Now.Millisecond;
+                msg.Type = 3;
+                var sendImgRep = mAPIService.SendMsgImg(msg, mPass_ticket, mBaseReq);
+                if (sendImgRep != null && sendImgRep.BaseResponse != null && sendImgRep.BaseResponse.ret == 0)
+                {
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void Logout()
+        {
+            mAPIService.Logout(mBaseReq.Skey, mBaseReq.Sid, mBaseReq.Uin);
+        }
     }
 }

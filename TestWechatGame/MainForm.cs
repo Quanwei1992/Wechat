@@ -15,12 +15,14 @@ namespace TestWechatGame
 
 
         private Wechat.WeChatClient wechat = new Wechat.WeChatClient();
+        private Robot mRobot = null;
         private void MainForm_Load(object sender, EventArgs e)
         {
             comboBox_group.Enabled = false;
             button_run.Enabled = false;
             wechat.OnEvent += OnWechatAppEvent;
             wechat.Run();
+            mRobot = new Robot(wechat);
 
         }
 
@@ -98,19 +100,19 @@ namespace TestWechatGame
 
         private void button_run_Click(object sender, EventArgs e)
         {
-            //if (comboBox_group.SelectedValue != null)
-            //{
-            //    if (button_run.Text == "启动")
-            //    {
-            //        button_run.Text = "停止";
-            //        app.RunGame(comboBox_group.SelectedValue as String);
-            //    }
-            //    else
-            //    {
-            //        button_run.Text = "启动";
-            //        app.StopGame();
-            //    }
-            //}
+            if (comboBox_group.SelectedValue != null)
+            {
+                if (button_run.Text == "启动")
+                {
+                    button_run.Text = "停止";
+                    mRobot.Run(comboBox_group.SelectedValue as String);
+                }
+                else
+                {
+                    button_run.Text = "启动";
+                    mRobot.Stop();
+                }
+            }
 
         }
 
@@ -121,9 +123,10 @@ namespace TestWechatGame
 
         private void button_test_Click(object sender, EventArgs e)
         {
+           
             var user = UserManager.CreateUser("哈喽");
-            System.Diagnostics.Debug.WriteLine(user.ID);
             UserManager.SetUserData(user.ID, "Score", 95.88);
+            Logger.LogInfo("AddUser:{0}", user.ID);
         }
     }
 }

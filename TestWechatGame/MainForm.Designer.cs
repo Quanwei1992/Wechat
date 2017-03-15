@@ -31,6 +31,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button_run = new System.Windows.Forms.Button();
             this.pictureBox_wechat = new System.Windows.Forms.PictureBox();
+            this.button_test = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_wechat)).BeginInit();
             this.SuspendLayout();
             // 
@@ -70,11 +71,22 @@
             this.pictureBox_wechat.TabIndex = 3;
             this.pictureBox_wechat.TabStop = false;
             // 
+            // button_test
+            // 
+            this.button_test.Location = new System.Drawing.Point(145, 372);
+            this.button_test.Name = "button_test";
+            this.button_test.Size = new System.Drawing.Size(75, 23);
+            this.button_test.TabIndex = 4;
+            this.button_test.Text = "Test";
+            this.button_test.UseVisualStyleBackColor = true;
+            this.button_test.Click += new System.EventHandler(this.button_test_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(514, 439);
+            this.Controls.Add(this.button_test);
             this.Controls.Add(this.pictureBox_wechat);
             this.Controls.Add(this.button_run);
             this.Controls.Add(this.label1);
@@ -95,6 +107,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button_run;
         private System.Windows.Forms.PictureBox pictureBox_wechat;
+        private System.Windows.Forms.Button button_test;
     }
 }
 

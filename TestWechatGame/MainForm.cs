@@ -118,5 +118,12 @@ namespace TestWechatGame
         {
 
         }
+
+        private void button_test_Click(object sender, EventArgs e)
+        {
+            var user = UserManager.CreateUser("哈喽");
+            System.Diagnostics.Debug.WriteLine(user.ID);
+            UserManager.SetUserData(user.ID, "Score", 95.88);
+        }
     }
 }

@@ -9,7 +9,7 @@ namespace Wechat
    public class Message
    {
         public string FromContactID;
-        public string ToIContactD;
+        public string ToContactD;
    }
 
 
@@ -23,8 +23,6 @@ namespace Wechat
         public int MsgType;
         public string Content;
     }
-
-
 
     public class MessageFactory
     {
@@ -68,7 +66,7 @@ namespace Wechat
                 };
             }
             ret.FromContactID = msg.FromUserName;
-            ret.ToIContactD = msg.ToUserName;
+            ret.ToContactD = msg.ToUserName;
             return ret;
         }
     }

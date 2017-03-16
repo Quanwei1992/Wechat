@@ -18,7 +18,7 @@ namespace TestWechatGame
         private Robot mRobot = null;
         private void MainForm_Load(object sender, EventArgs e)
         {
-            comboBox_group.Enabled = false;
+            comboBox_contact.Enabled = false;
             button_run.Enabled = false;
             wechat.OnEvent += OnWechatAppEvent;
             wechat.Run();
@@ -83,6 +83,29 @@ namespace TestWechatGame
         }
 
 
+        private void ShowContacts()
+        {
+            var contacts = wechat.Contacts;
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Name");
+            dt.Columns.Add("ID");
+            foreach (var contact in contacts)
+            {
+                var row = dt.NewRow();
+                row["Name"] = Utils.ClearHtml(contact.NickName);
+                row["ID"] = contact.ID;
+                dt.Rows.Add(row);
+            }
+
+            comboBox_contact.DataSource = dt;
+            comboBox_contact.DisplayMember = "Name";
+            comboBox_contact.ValueMember = "ID";
+            comboBox_contact.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_contact.Enabled = true;
+            button_run.Enabled = true;
+        }
+
+
 
         void RunAsync(Action action)
         {
@@ -100,12 +123,12 @@ namespace TestWechatGame
 
         private void button_run_Click(object sender, EventArgs e)
         {
-            if (comboBox_group.SelectedValue != null)
+            if (comboBox_contact.SelectedValue != null)
             {
                 if (button_run.Text == "启动")
                 {
                     button_run.Text = "停止";
-                    mRobot.Run(comboBox_group.SelectedValue as String);
+                    mRobot.Run(comboBox_contact.SelectedValue as String);
                 }
                 else
                 {
@@ -123,8 +146,8 @@ namespace TestWechatGame
 
         private void button_test_Click(object sender, EventArgs e)
         {
-            wechat.Logout();
-
+            string uid = comboBox_contact.SelectedValue as string;
+            wechat.SetRemarkName(uid, "HALO<span>15945151</span>");
         }
     }
 }

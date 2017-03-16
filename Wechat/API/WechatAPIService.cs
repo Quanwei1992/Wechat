@@ -428,30 +428,30 @@ namespace Wechat.API
 
         private string GetString(string url)
         {
-            try
-            {
+           // try
+           // {
                 HttpResponseMessage response = mHttpClient.GetAsync(new Uri(url)).Result;
                 return response.Content.ReadAsStringAsync().Result;
-            }
-            catch {
-                InitHttpClient();
-                return null;
-            }
+           // }
+            //catch {
+            //    InitHttpClient();
+            //    return null;
+            //}
 
         }
 
         private string PostString(string url, string content)
         {
-            try
-            {
+            //try
+            //{
                 HttpResponseMessage response = mHttpClient.PostAsync(new Uri(url), new StringContent(content)).Result;
                 return response.Content.ReadAsStringAsync().Result;
-            }
-            catch
-            {
-                InitHttpClient();
-                return null;
-            }
+            //}
+            //catch
+           // {
+           //     InitHttpClient();
+           //     return null;
+           // }
 
         }
 

@@ -83,6 +83,22 @@ namespace Wechat
             }
         }
 
+        public Group GetGroup(string ID)
+        {
+            if (mGroups == null) return null;
+            return mGroups.FindLast((group) => {
+                return group.ID == ID;
+            });
+        }
+
+        public Contact GetContact(string ID)
+        {
+            if (mContacts == null) return null;
+            return mContacts.FindLast((contact) =>
+            {
+                return contact.ID == ID;
+            });
+        }
 
         /*
          * Web Weixin Pipeline

@@ -8,7 +8,7 @@ namespace Wechat
 {
     public class Contact
     {
-        public string NickName { get; set; }
+        public virtual string NickName { get; set; }
         public string ID { get; set; }
         public string RemarkName { get; set; }
     }

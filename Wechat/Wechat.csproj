@@ -46,7 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API\Http\HttpClient.cs" />
     <Compile Include="API\RPC\BatchGetContact\BatchGetContactRequest.cs" />
     <Compile Include="API\RPC\BatchGetContact\BatchGetContactResponse.cs" />
     <Compile Include="API\RPC\GetContact\GetContactResponse.cs" />
@@ -85,7 +84,6 @@
     <Compile Include="Wechat\Group.cs" />
     <Compile Include="Wechat\Message.cs" />
     <Compile Include="Wechat\WeChatClient.cs" />
-    <Compile Include="Wechat\WechatClient_old.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

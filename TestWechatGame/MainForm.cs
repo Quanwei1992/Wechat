@@ -118,15 +118,13 @@ namespace TestWechatGame
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-
+            wechat.Quit();
         }
 
         private void button_test_Click(object sender, EventArgs e)
         {
-           
-            var user = UserManager.CreateUser("哈喽");
-            UserManager.SetUserData(user.ID, "Score", 95.88);
-            Logger.LogInfo("AddUser:{0}", user.ID);
+            wechat.Logout();
+
         }
     }
 }

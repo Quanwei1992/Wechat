@@ -14,6 +14,7 @@ namespace Wechat
         GetUUID,
         GetQRCode,
         Login,
+        QRCodeScaned,
         WeixinInit,
         SyncCheck,
         WeixinSync,
@@ -112,7 +113,6 @@ namespace Wechat
         */
 
         private System.Threading.Thread mMainLoopThread;
-        private API.Http.HttpClient mHttpClient;
         private ClientStatusType mStatus = ClientStatusType.None;
         public void Run()
         {
@@ -120,8 +120,7 @@ namespace Wechat
             mIsQuit = false;
             IsLogin = false;
             CurrentStatus = ClientStatusType.GetUUID;
-            mHttpClient = new API.Http.HttpClient();
-            mAPIService = new WechatAPIService(mHttpClient);
+            mAPIService = new WechatAPIService();
             mMainLoopThread = new System.Threading.Thread(MainLoop);
             mMainLoopThread.Start();
         }
@@ -129,6 +128,7 @@ namespace Wechat
         public void Quit(bool force = false)
         {
             mIsQuit = true;
+            Logout();
             if (force) {
                 if (mMainLoopThread != null && mMainLoopThread.IsAlive) {
                     mMainLoopThread.Abort();
@@ -147,34 +147,44 @@ namespace Wechat
         {
             while (!mIsQuit)
             {
-                switch (CurrentStatus)
-                {
-                    case ClientStatusType.GetUUID:
-                        HandleGetLoginSession();
-                        break;
-                    case ClientStatusType.GetQRCode:
-                        HandleGetQRCode();
-                        break;
-                    case ClientStatusType.Login:
-                        HandleLogin();
-                        break;
-                    case ClientStatusType.WeixinInit:
-                        HandleInit();
-                        break;
-                    case ClientStatusType.WeixinSync:
-                        HandleSync();
-                        break;
-                }
+                 HandleStatus();
             }
         }
 
 
 
         #region StatusHandle
+
+        private void HandleStatus()
+        {
+            switch (CurrentStatus)
+            {
+                case ClientStatusType.GetUUID:
+                    HandleGetLoginSession();
+                    break;
+                case ClientStatusType.GetQRCode:
+                    HandleGetQRCode();
+                    break;
+                case ClientStatusType.Login:
+                    HandleLogin();
+                    break;
+                case ClientStatusType.QRCodeScaned:
+                    HandleQRCodeScaned();
+                    break;
+                case ClientStatusType.WeixinInit:
+                    HandleInit();
+                    break;
+               
+                case ClientStatusType.WeixinSync:
+                    HandleSync();
+                    break;
+            }
+        }
+
+
         private void HandleGetLoginSession()
         {
             IsLogin = false;
-            mHttpClient.ClearCookie();
             mLoginSession = mAPIService.GetNewQRLoginSessionID();
             if (!string.IsNullOrWhiteSpace(mLoginSession))
             {
@@ -194,27 +204,17 @@ namespace Wechat
                 };
                 OnEvent?.Invoke(this, wce);
             }
+            else {
+                CurrentStatus = ClientStatusType.GetUUID;
+            }
         }
+
 
 
         private void HandleLogin()
         {
             var loginResult = mAPIService.Login(mLoginSession);
-            if (loginResult.code == 200)
-            {
-                // 登录成功
-                var redirectResult = mAPIService.LoginRedirect(loginResult.redirect_uri);
-                mBaseReq = new BaseRequest();
-                mBaseReq.Skey = redirectResult.skey;
-                mBaseReq.Sid = redirectResult.wxsid;
-                mBaseReq.Uin = redirectResult.wxuin;
-                mBaseReq.DeviceID = CreateNewDeviceID();
-                mPass_ticket = redirectResult.pass_ticket;
-                CurrentStatus = ClientStatusType.WeixinInit;
-                OnEvent?.Invoke(this, new LoginSucessEvent());
-
-            }
-            else if (loginResult.code == 201)
+            if (loginResult!=null && loginResult.code == 201)
             {
                 // 已扫描,但是未确认登录
                 // convert base64 to image
@@ -226,6 +226,8 @@ namespace Wechat
                 {
                     UserAvatarImage = image
                 });
+
+                CurrentStatus = ClientStatusType.QRCodeScaned;
             }
             else
             {
@@ -233,10 +235,33 @@ namespace Wechat
             }
         }
 
+        private void HandleQRCodeScaned()
+        {
+            var loginResult = mAPIService.Login(mLoginSession);
+            if (loginResult != null && loginResult.code == 200)
+            {
+                // 登录成功
+                var redirectResult = mAPIService.LoginRedirect(loginResult.redirect_uri);
+                mBaseReq = new BaseRequest();
+                mBaseReq.Skey = redirectResult.skey;
+                mBaseReq.Sid = redirectResult.wxsid;
+                mBaseReq.Uin = redirectResult.wxuin;
+                mBaseReq.DeviceID = CreateNewDeviceID();
+                mPass_ticket = redirectResult.pass_ticket;
+                CurrentStatus = ClientStatusType.WeixinInit;
+                OnEvent?.Invoke(this, new LoginSucessEvent());
+            }
+            else
+            {
+                CurrentStatus = ClientStatusType.GetUUID;
+            }
+        }
+
+
         private void HandleInit()
         {
             var initResult = mAPIService.Init(mPass_ticket, mBaseReq);
-            if (initResult.BaseResponse.ret == 0)
+            if (initResult!=null && initResult.BaseResponse.ret == 0)
             {
                 Self = CreateContact(initResult.User);
                 mSyncKey = initResult.SyncKey;
@@ -244,8 +269,8 @@ namespace Wechat
                 var statusNotifyRep = mAPIService.Statusnotify(Self.ID, Self.ID, mPass_ticket, mBaseReq);
                 if (statusNotifyRep != null && statusNotifyRep.BaseResponse != null && statusNotifyRep.BaseResponse.ret == 0)
                 {
-                    IsLogin = true;
                     CurrentStatus = ClientStatusType.WeixinSync;
+                    IsLogin = true;         
                 }
                 else {
                     CurrentStatus = ClientStatusType.GetUUID;
@@ -258,22 +283,26 @@ namespace Wechat
                 return;
             }
 
-            InitContactAndGroups();
+            if (!InitContactAndGroups()) {
+                CurrentStatus = ClientStatusType.WeixinInit;
+                IsLogin = false;
+                return;
+            }
 
+            
             OnEvent?.Invoke(this, new InitedEvent());
 
         }
 
 
-        private void InitContactAndGroups()
+        private bool InitContactAndGroups()
         {
             mContacts = new List<Contact>();
             mGroups = new List<Group>();
 
             var contactResult = mAPIService.GetContact(mPass_ticket, mBaseReq.Skey);
             if (contactResult == null || contactResult.BaseResponse == null || contactResult.BaseResponse.ret != 0){
-                CurrentStatus = ClientStatusType.GetUUID;
-                return;
+                return false;
             }
 
             List<string> groupIDs = new List<string>();
@@ -288,10 +317,10 @@ namespace Wechat
                 }
             }
 
-            if (groupIDs.Count <= 0) return;
+            if (groupIDs.Count <= 0) return true;
             // 批量获得群成员详细信息
             var batchResult = mAPIService.BatchGetContact(groupIDs.ToArray(), mPass_ticket, mBaseReq);
-            if (batchResult == null || batchResult.BaseResponse.ret != 0) return;
+            if (batchResult == null || batchResult.BaseResponse.ret != 0) return false;
 
             foreach (var user in batchResult.ContactList)
             {
@@ -309,7 +338,7 @@ namespace Wechat
                 mGroups.Add(group);
             }
 
-
+            return true;
         }
 
 
@@ -323,12 +352,16 @@ namespace Wechat
             if (mSyncKey.Count <= 0) return;
 
             var checkResult = mAPIService.SyncCheck(mSyncKey.List, mBaseReq);
-            if (checkResult.retcode != "0") {
+            if (checkResult == null) return;
+
+
+            if (checkResult.retcode!=null && checkResult.retcode != "0") {
                 CurrentStatus = ClientStatusType.GetUUID;
                 return;
             }
             if (checkResult.selector == "0") return;
             var syncResult = mAPIService.Sync(mSyncKey, mPass_ticket, mBaseReq);
+            if (syncResult == null) return;
             mSyncKey = syncResult.SyncKey;
 
             // 处理同步
@@ -475,7 +508,12 @@ namespace Wechat
 
         public void Logout()
         {
+            if (!IsLogin || mMainLoopThread==null || !mMainLoopThread.IsAlive) return;
             mAPIService.Logout(mBaseReq.Skey, mBaseReq.Sid, mBaseReq.Uin);
+            IsLogin = false;
+            mContacts = null;
+            mGroups = null;
+            CurrentStatus = ClientStatusType.GetUUID;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Wechat.tools
 {
-    public class UniversalTool
+    public class Util
     {
         public static string getMD5(byte[] data) {
 

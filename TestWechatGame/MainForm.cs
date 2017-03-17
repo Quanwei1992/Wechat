@@ -18,8 +18,11 @@ namespace TestWechatGame
         private Robot mRobot = null;
         private void MainForm_Load(object sender, EventArgs e)
         {
+
             comboBox_contact.Enabled = false;
+            comboBox_group.Enabled = false;
             button_run.Enabled = false;
+            button_test.Enabled = false;
             wechat.OnEvent += OnWechatAppEvent;
             wechat.Run();
             mRobot = new Robot(wechat);
@@ -51,10 +54,18 @@ namespace TestWechatGame
                 if (e is Wechat.StatusChangedEvent)
                 {
                     var changedEvent = (e as Wechat.StatusChangedEvent);
+                    if (changedEvent.ToStatus != Wechat.ClientStatusType.WeixinSync)
+                    {
+                        comboBox_contact.Enabled = false;
+                        comboBox_group.Enabled = false;
+                        button_run.Enabled = false;
+                        button_test.Enabled  = false;
+                    }
                     Console.WriteLine(string.Format( "StatusChanged {0} -> {1}",changedEvent.FromStatus,changedEvent.ToStatus));
                 }
                 if (e is Wechat.InitedEvent) {
                     ShowGroups();
+                    ShowContacts();
                 }
             });
         }
@@ -102,7 +113,7 @@ namespace TestWechatGame
             comboBox_contact.ValueMember = "ID";
             comboBox_contact.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox_contact.Enabled = true;
-            button_run.Enabled = true;
+            button_test.Enabled = true;
         }
 
 

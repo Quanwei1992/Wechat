@@ -99,10 +99,10 @@ namespace Wechat.API
         /// </summary>
         /// <param name="QRLoginSessionID"></param>
         /// <returns></returns>
-        public LoginResult Login(string QRLoginSessionID)
+        public LoginResult Login(string QRLoginSessionID,long t)
         {
             string url = string.Format("https://login.wx.qq.com/cgi-bin/mmwebwx-bin/login?loginicon=true&uuid={0}&tip={1}&r={2}&_={3}",
-                QRLoginSessionID,"0",getR(),UniversalTool.GetTimeStamp());
+                QRLoginSessionID,"0",t/1579,t);
 
             SetHttpHeader("Accept", "*/*");
             mHttpClient.DefaultRequestHeaders.Referrer = new Uri("https://wx.qq.com/");
@@ -231,12 +231,13 @@ namespace Wechat.API
             return rep;
         }
 
-        public SyncCheckResponse SyncCheck(SyncItem[] syncItems, BaseRequest baseReq)
+
+        public SyncCheckResponse SyncCheck(SyncItem[] syncItems,BaseRequest baseReq,long syncCheckTimes)
         {
             SetHttpHeader("Accept", "*/*");
             SetHttpHeader("Connection", "keep-alive");
             SetHttpHeader("Accept-Encoding", "gzip, deflate, br");
-
+            
             string synckey = "";
             for (int i = 0; i < syncItems.Length; i++) {
                 if (i != 0) {
@@ -245,7 +246,7 @@ namespace Wechat.API
                 synckey += syncItems[i].Key + "_" + syncItems[i].Val;
             }
             string url = "https://webpush.wx.qq.com/cgi-bin/mmwebwx-bin/synccheck?skey={0}&sid={1}&uin={2}&deviceid={3}&synckey={4}&_={5}&r={6}";
-            url = string.Format(url, baseReq.Skey.Replace("@","%40"), baseReq.Sid, baseReq.Uin, baseReq.DeviceID,synckey, getR()-10, getR());
+            url = string.Format(url,UrlEncode(baseReq.Skey), UrlEncode(baseReq.Sid), baseReq.Uin, baseReq.DeviceID,synckey,syncCheckTimes,Util.GetTimeStamp());
             string repStr =GetString(url);
             if (repStr == null) return null;
             SyncCheckResponse rep = new SyncCheckResponse();
@@ -259,7 +260,7 @@ namespace Wechat.API
         }
 
         static long getR() {
-            return (long)(DateTime.Now.ToUniversalTime() - new System.DateTime(1970, 1, 1)).TotalMilliseconds;
+            return Util.GetTimeStamp();
         }
 
         public SyncResponse Sync(SyncKey syncKey,string pass_ticket,BaseRequest baseReq)
@@ -274,7 +275,7 @@ namespace Wechat.API
             SyncRequest req = new SyncRequest();
             req.BaseRequest = baseReq;
             req.SyncKey = syncKey;
-            req.rr = getR();
+            req.rr = ~getR();
             string requestJson = JsonConvert.SerializeObject(req);
             string repJsonStr = PostString(url, requestJson);
             if (repJsonStr == null) return null;
@@ -334,7 +335,7 @@ namespace Wechat.API
             req.FromUserName = fromUserName;
             req.ToUserName = toUserName;
             req.UploadType = uploadType;
-            req.FileMd5 = UniversalTool.getMD5(buffer);
+            req.FileMd5 = Util.getMD5(buffer);
 
             string url = "https://file.wx.qq.com/cgi-bin/mmwebwx-bin/webwxuploadmedia?f=json";
             string requestJson = JsonConvert.SerializeObject(req);
@@ -431,7 +432,9 @@ namespace Wechat.API
            // try
            // {
                 HttpResponseMessage response = mHttpClient.GetAsync(new Uri(url)).Result;
-                return response.Content.ReadAsStringAsync().Result;
+                string ret = response.Content.ReadAsStringAsync().Result;
+                response.Dispose();
+                return ret;
            // }
             //catch {
             //    InitHttpClient();
@@ -445,13 +448,15 @@ namespace Wechat.API
             //try
             //{
                 HttpResponseMessage response = mHttpClient.PostAsync(new Uri(url), new StringContent(content)).Result;
-                return response.Content.ReadAsStringAsync().Result;
+            string ret = response.Content.ReadAsStringAsync().Result;
+            response.Dispose();
+            return ret;
             //}
             //catch
-           // {
-           //     InitHttpClient();
-           //     return null;
-           // }
+            // {
+            //     InitHttpClient();
+            //     return null;
+            // }
 
         }
 
@@ -501,6 +506,12 @@ namespace Wechat.API
 
             mHttpClient.DefaultRequestHeaders.Add(name, value);
         }
+        string UrlEncode(string url)
+        {
+            return System.Web.HttpUtility.UrlEncode(url);
+        }
 
     }
+
+
 }

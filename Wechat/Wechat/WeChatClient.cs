@@ -5,6 +5,7 @@ using System.IO;
 using Wechat.API;
 using Wechat.API.RPC;
 using System.Collections.Generic;
+using Wechat.tools;
 
 namespace Wechat
 {
@@ -229,7 +230,7 @@ namespace Wechat
 
         private void HandleLogin()
         {
-            var loginResult = mAPIService.Login(mLoginSession);
+            var loginResult = mAPIService.Login(mLoginSession,Util.GetTimeStamp());
             if (loginResult!=null && loginResult.code == 201)
             {
                 // 已扫描,但是未确认登录
@@ -251,9 +252,11 @@ namespace Wechat
             }
         }
 
+        private long mSyncCheckTimes = 0;
         private void HandleQRCodeScaned()
         {
-            var loginResult = mAPIService.Login(mLoginSession);
+            mSyncCheckTimes = Util.GetTimeStamp();
+            var loginResult = mAPIService.Login(mLoginSession,mSyncCheckTimes);
             if (loginResult != null && loginResult.code == 200)
             {
                 // 登录成功
@@ -367,7 +370,7 @@ namespace Wechat
             }
             if (mSyncKey.Count <= 0) return;
 
-            var checkResult = mAPIService.SyncCheck(mSyncKey.List, mBaseReq);
+            var checkResult = mAPIService.SyncCheck(mSyncKey.List, mBaseReq,++mSyncCheckTimes);
             if (checkResult == null) return;
 
 

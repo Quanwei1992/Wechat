@@ -11,6 +11,7 @@ namespace TestWechatGame
         private WeChatClient mClient;
         private string mGroupID;
         private bool IsRunning = false;
+        private const long DEBUGUID = 80000000;
 
         public Robot(Wechat.WeChatClient client)
         {
@@ -24,14 +25,14 @@ namespace TestWechatGame
             mGroupID = group;
             mClient.OnEvent += OnWechatEvent;
             IsRunning = true;
-            mClient.SendMsg(mGroupID, "开始游戏");
+            mClient.SendMsg(mGroupID, "_________start robot");
         }
 
         public void Stop()
         {
             mClient.OnEvent -= OnWechatEvent;
             IsRunning = false;
-            mClient.SendMsg(mGroupID, "停止游戏");
+            mClient.SendMsg(mGroupID, "_________stop robot");
         }
 
         private void OnWechatEvent(WeChatClient sender, WeChatClientEvent e)
@@ -64,35 +65,64 @@ namespace TestWechatGame
             }
         }
 
+
+        private long ReadMemeberID(Contact contact)
+        {
+            if (contact.ID == mClient.Self.ID) return DEBUGUID;
+            if (contact.RemarkName != null && contact.RemarkName.Contains("(#") && contact.RemarkName.EndsWith(") ")){
+                int startIndex = contact.RemarkName.LastIndexOf("(#");
+                string id = contact.RemarkName.Substring(startIndex + 2, contact.RemarkName.Length - startIndex-2);
+                long uid = 1;
+                long.TryParse(id, out uid);
+                return uid;
+            }
+            return -1;
+        }
+
+        private bool SetMemberID(Contact contact,long id)
+        {
+            string idstr = string.Format("{0}(#{1}) ",contact.NickName,id.ToString());
+            if (mClient.SetRemarkName(contact.ID, idstr)) {
+                contact.RemarkName = idstr;
+                return true;
+            }
+            return false;
+        }
+
+
         private void HandleGroupMessage(TextMessage msg)
         {
             if (!IsRunning) return;
-            if (msg.Content.Contains("注册用户"))
-            {
-                var group = mClient.GetGroup(mGroupID);
-                var member = group.GetMember(msg.FromContactID);
+            var group = mClient.GetGroup(mGroupID);
+            var member = group.GetMember(msg.FromContactID);
+            var cmd = CommandFactory.Parse(msg.Content,member);
+            if (cmd != null) {
+                cmd.Execute(this);
+            }
 
-                if (member.RemarkName == null || !member.RemarkName.StartsWith("UID:"))
+        }
+
+
+        public User GetUser(Contact contact)
+        {
+            long uid = ReadMemeberID(contact);
+            if (uid < 0)
+            {
+                var user = UserManager.CreateUser(contact.NickName);
+                if (user != null && SetMemberID(contact, user.ID))
                 {
-                    var user = UserManager.CreateUser(member.NickName);
-                    if (user != null)
-                    {
-                        string remark = "UID:" + user.ID.ToString();
-                        if (mClient.SetRemarkName(msg.FromContactID, remark))
-                        {
-                            member.RemarkName = remark;
-                            mClient.SendMsg(mGroupID, "注册成功，您的ID是:" + user.ID);
-                        }
-                    }
+                    return user;
                 }
-                else
-                {
-                    mClient.SendMsg(mGroupID, "您已经注册过了，" + member.RemarkName);
+                else {
+                    return null;
                 }
             }
-            else {
-                mClient.SendMsg(mGroupID, msg.Content);
-            }
+            return UserManager.GetUser(uid);
+        }
+
+        public void SendMessageToGroup(string message)
+        {
+            mClient.SendMsg(mGroupID, message);
         }
     }
 }

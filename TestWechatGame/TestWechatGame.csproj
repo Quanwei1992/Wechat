@@ -82,7 +82,11 @@
     <Compile Include="LotteryCenter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Robot.cs" />
+    <Compile Include="Robot\Command\Command.cs" />
+    <Compile Include="Robot\Command\CommandFactory.cs" />
+    <Compile Include="Robot\Command\QueryScoreCommand.cs" />
+    <Compile Include="Robot\Command\RechargeCommand.cs" />
+    <Compile Include="Robot\Robot.cs" />
     <Compile Include="Tools\Utils.cs" />
     <Compile Include="User\User.cs" />
     <Compile Include="User\UserManager.cs" />

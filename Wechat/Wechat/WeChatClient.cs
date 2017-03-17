@@ -457,8 +457,14 @@ namespace Wechat
 
         public bool SetRemarkName(string userName, string remarkName)
         {
+            var contact = GetContact(userName);
+            if (contact == null) return false;
             var rep = mAPIService.Oplog(userName, 2, 0, remarkName, mPass_ticket, mBaseReq);
-            return rep.BaseResponse.ret == 0;
+            if (rep.BaseResponse.ret == 0) {
+                contact.RemarkName = remarkName;
+                return true;
+            }
+            return false;
         }
 
 

@@ -9,8 +9,13 @@ namespace TestWechatGame
     public class UserManager
     {
 
+        private static User[] mUsers = null;
+        private static bool isDirty = true;
+
         public static User[] GetUsers()
         {
+            if (!isDirty && mUsers != null) return mUsers;
+
             string sql = "SELECT * FROM User";
             var reader = Database.Instance.ExecuteSQL(sql);
             List<User> users = new List<User>();
@@ -20,7 +25,8 @@ namespace TestWechatGame
                 User user = new User(name, id);
                 users.Add(user);
             }
-            return users.ToArray();
+            mUsers = users.ToArray();
+            return mUsers;
         }
 
 
@@ -38,7 +44,11 @@ namespace TestWechatGame
         public static bool SetUserData(Int64 uid, string dataName, object data)
         {
             string sql = string.Format("UPDATE GameData SET {0} = {1} WHERE UserID = {2}",dataName,data,uid);
-            return Database.Instance.ExecuteNoQuery(sql) == 1;
+            if (Database.Instance.ExecuteNoQuery(sql) == 1) {
+                isDirty = true;
+                return true;
+            }
+            return false;
         }
 
 
@@ -63,9 +73,18 @@ namespace TestWechatGame
             if (count != 1) return null;
 
             User user = new User(name, uid);
+            isDirty = true;
             return user;
         }
 
+        public static User GetUser(long uid)
+        {
+            var users = GetUsers();
+            foreach (var user in users) {
+                if (user.ID == uid) return user;
+            }
+            return null;
+        }
 
     }
 }

@@ -134,12 +134,12 @@ namespace TestWechatGame
 
         private void button_run_Click(object sender, EventArgs e)
         {
-            if (comboBox_contact.SelectedValue != null)
+            if (comboBox_group.SelectedValue != null)
             {
                 if (button_run.Text == "启动")
                 {
                     button_run.Text = "停止";
-                    mRobot.Run(comboBox_contact.SelectedValue as String);
+                    mRobot.Run(comboBox_group.SelectedValue as String);
                 }
                 else
                 {
@@ -152,13 +152,13 @@ namespace TestWechatGame
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            wechat.Quit();
+            wechat.Quit(true);
         }
 
         private void button_test_Click(object sender, EventArgs e)
         {
             string uid = comboBox_contact.SelectedValue as string;
-            wechat.SetRemarkName(uid, "HALO<span>15945151</span>");
+            wechat.SetRemarkName(uid,"梦(#123456789)");
         }
     }
 }

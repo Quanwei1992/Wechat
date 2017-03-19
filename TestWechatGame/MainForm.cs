@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Data;
+using System.Text.RegularExpressions;
 
 namespace TestWechatGame
 {
@@ -11,11 +12,15 @@ namespace TestWechatGame
         public MainForm()
         {
             InitializeComponent();
+
+            
+
         }
 
 
         private Wechat.WeChatClient wechat = new Wechat.WeChatClient();
         private Robot mRobot = null;
+        private Lottery.LotteryCenter lottery = new Lottery.LotteryCenter();
         private void MainForm_Load(object sender, EventArgs e)
         {
 
@@ -25,7 +30,8 @@ namespace TestWechatGame
             button_test.Enabled = false;
             wechat.OnEvent += OnWechatAppEvent;
             wechat.Run();
-            mRobot = new Robot(wechat);
+            lottery.Run();
+            mRobot = new Robot(wechat,lottery);
 
         }
 
@@ -152,6 +158,7 @@ namespace TestWechatGame
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            lottery.Stop();
             wechat.Quit(true);
         }
 
@@ -159,6 +166,11 @@ namespace TestWechatGame
         {
             string uid = comboBox_contact.SelectedValue as string;
             wechat.SetRemarkName(uid,"梦(#123456789)");
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

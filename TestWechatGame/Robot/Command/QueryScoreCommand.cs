@@ -9,9 +9,7 @@ namespace TestWechatGame.Command
 {
     public class QueryScoreCommand : BaseCommand
     {
-        public QueryScoreCommand(Contact member) : base(member)
-        {
-        }
+
 
         public override bool Execute(Robot robot)
         {
@@ -22,7 +20,7 @@ namespace TestWechatGame.Command
                 return false;
             }
             double score = (double)UserManager.GetUserData(user.ID, "Score");
-            robot.SendMessageToGroup("@" + Member.NickName + " 您的剩余积分为:" + score);
+            robot.SendMessageToGroup("@" + Utils.ClearHtml(Member.NickName) + string.Format(" 您的剩余积分为:{0:F2}",score));
             return true;
         }
     }

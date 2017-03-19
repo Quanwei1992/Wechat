@@ -94,6 +94,7 @@ namespace Wechat
 
         public Contact GetContact(string ID)
         {
+            if (ID == Self.ID) return Self;
             if (mContacts == null) return null;
             return mContacts.FindLast((contact) =>
             {
@@ -455,11 +456,11 @@ namespace Wechat
             return rep.BaseResponse.ret == 0;
         }
 
-        public bool SetRemarkName(string userName, string remarkName)
+        public bool SetRemarkName(string id, string remarkName)
         {
-            var contact = GetContact(userName);
+            var contact = GetContact(id);
             if (contact == null) return false;
-            var rep = mAPIService.Oplog(userName, 2, 0, remarkName, mPass_ticket, mBaseReq);
+            var rep = mAPIService.Oplog(id, 2, 0, remarkName, mPass_ticket, mBaseReq);
             if (rep.BaseResponse.ret == 0) {
                 contact.RemarkName = remarkName;
                 return true;

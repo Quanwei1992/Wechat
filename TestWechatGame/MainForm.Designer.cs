@@ -66,7 +66,7 @@
             // 
             // pictureBox_wechat
             // 
-            this.pictureBox_wechat.Location = new System.Drawing.Point(123, 58);
+            this.pictureBox_wechat.Location = new System.Drawing.Point(75, 65);
             this.pictureBox_wechat.Name = "pictureBox_wechat";
             this.pictureBox_wechat.Size = new System.Drawing.Size(270, 270);
             this.pictureBox_wechat.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -104,7 +104,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(514, 439);
+            this.ClientSize = new System.Drawing.Size(443, 433);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBox_group);
             this.Controls.Add(this.button_test);

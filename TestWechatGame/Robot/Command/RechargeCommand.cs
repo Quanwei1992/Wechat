@@ -12,7 +12,7 @@ namespace TestWechatGame.Command
 
         private double mScore = 0.0f;
 
-        public RechargeCommand(Contact member,double score) : base(member)
+        public RechargeCommand(double score)
         {
             mScore = score;
         }
@@ -30,11 +30,11 @@ namespace TestWechatGame.Command
             bool ret = UserManager.SetUserData(user.ID, "Score", (double)(score + mScore));
             if (ret)
             {
-                robot.SendMessageToGroup("@" + Member.NickName + " 充值成功，您当前剩余积分为：" + (double)(score + mScore));
+                robot.SendMessageToGroup("@" + Utils.ClearHtml(Member.NickName) + string.Format("  充值成功，您当前剩余积分为：{0:F2}", score + mScore));
                 return true;
             }
             else {
-                robot.SendMessageToGroup("@" + Member.NickName + " 充值失败，您当前剩余积分为：" + (double)(score));
+                robot.SendMessageToGroup("@" + Utils.ClearHtml(Member.NickName) + string.Format("  充值失败，您当前剩余积分为：{0:F2}", score));
             }
             return false;
         }

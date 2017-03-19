@@ -14,11 +14,7 @@ namespace TestWechatGame
 
     public class BaseCommand : IContactCommand
     {
-        protected Contact Member;
-        public BaseCommand(Contact member)
-        {
-            Member = member;
-        }
+        public Contact Member;
 
         public virtual bool Execute(Robot robot)
         {

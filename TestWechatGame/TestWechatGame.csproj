@@ -107,10 +107,11 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <None Include="doc\pkten.EAP" />
-    <None Include="doc\pkten.ldb" />
     <None Include="doc\PKTEN系统设计.docx" />
     <None Include="doc\PKTEN需求分析.docx" />
     <None Include="doc\TODO.xlsx" />
+    <None Include="doc\ui.bmpr" />
+    <None Include="doc\数据库设计.docx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
